@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { onTourismSitesByCategoryChange } from "../services/tourismService";
 
 import {
@@ -28,36 +28,37 @@ const DamsPage = () => {
   const [touchEnd, setTouchEnd] = useState(null);
   const [weather, setWeather] = useState({});
   const [weatherLoading, setWeatherLoading] = useState(false);
+  const [loadedImages, setLoadedImages] = useState(new Set());
 
-  const handlePrev = (siteId, totalImages) => {
+  const handlePrev = useCallback((siteId, totalImages) => {
     setCurrentImageIndex((prev) => ({
       ...prev,
       [siteId]: ((prev[siteId] || 0) - 1 + totalImages) % totalImages,
     }));
-  };
+  }, []);
 
   useEffect(() => {
     document.title = "بني حسن - السدود";
   }, []);
 
-  const handleNext = (siteId, totalImages) => {
+  const handleNext = useCallback((siteId, totalImages) => {
     setCurrentImageIndex((prev) => ({
       ...prev,
       [siteId]: ((prev[siteId] || 0) + 1) % totalImages,
     }));
-  };
+  }, []);
 
-  // Ø¯ÙˆØ§Ù„ Ø§Ù„ØªØ¹Ø§Ù…Ù„ Ù…Ø¹ Ø§Ù„Ù„Ù…Ø³ ÙˆØ§Ù„Ù…Ø§ÙˆØ³ Ù„Ù„ØªÙ…Ø±ÙŠØ± Ø§Ù„Ø³Ø±ÙŠØ¹
-  const handleTouchStart = (e) => {
+  // دوال التعامل مع اللمس والماوس للتمرير السريع
+  const handleTouchStart = useCallback((e) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchMove = (e) => {
+  const handleTouchMove = useCallback((e) => {
     setTouchEnd(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchEnd = (damId, totalImages) => {
+  const handleTouchEnd = useCallback((damId, totalImages) => {
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
@@ -70,21 +71,21 @@ const DamsPage = () => {
     if (isRightSwipe) {
       handlePrev(damId, totalImages);
     }
-  };
+  }, [touchStart, touchEnd, handleNext, handlePrev]);
 
-  // Ø¯ÙˆØ§Ù„ Ø§Ù„ØªØ¹Ø§Ù…Ù„ Ù…Ø¹ Ø§Ù„Ù…Ø§ÙˆØ³
-  const handleMouseDown = (e) => {
+  // دوال التعامل مع الماوس
+  const handleMouseDown = useCallback((e) => {
     setTouchEnd(null);
     setTouchStart(e.clientX);
-  };
+  }, []);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (touchStart !== null) {
       setTouchEnd(e.clientX);
     }
-  };
+  }, [touchStart]);
 
-  const handleMouseUp = (damId, totalImages) => {
+  const handleMouseUp = useCallback((damId, totalImages) => {
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
@@ -100,7 +101,18 @@ const DamsPage = () => {
 
     setTouchStart(null);
     setTouchEnd(null);
-  };
+  }, [touchStart, touchEnd, handleNext, handlePrev]);
+
+  // دالة لمعالجة تحميل الصور
+  const handleImageLoad = useCallback((imageUrl) => {
+    setLoadedImages(prev => new Set(prev).add(imageUrl));
+  }, []);
+
+  // دالة لمعالجة أخطاء الصور
+  const handleImageError = useCallback((e, imageUrl) => {
+    console.error("Image failed to load:", imageUrl);
+    e.target.style.display = "none";
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -113,13 +125,6 @@ const DamsPage = () => {
           setDamsData([]);
         } else {
           console.log("Dams data received:", sites);
-          sites.forEach((dam, index) => {
-            console.log(`Dam ${index + 1} (${dam.title}):`, {
-              id: dam.id,
-              images: dam.images,
-              hasImages: dam.images && dam.images.length > 0,
-            });
-          });
           setDamsData(sites);
           setError(null);
         }
@@ -130,29 +135,29 @@ const DamsPage = () => {
     return () => unsubscribe();
   }, []);
 
-  // Ø¯Ø§Ù„Ø© Ø¬Ù„Ø¨ Ø§Ù„Ø·Ù‚Ø³
+  // دالة جلب الطقس
   useEffect(() => {
     if (damsData.length === 0) return;
     setWeatherLoading(true);
     const fetchAll = async () => {
       const map = {};
       await Promise.all(
-        damsData.map(async (dam) => {
-          if (dam.coordinates?.lat && dam.coordinates?.lon) {
+        damsData.map(async (d) => {
+          if (d.coordinates?.lat && d.coordinates?.lon) {
             try {
               const res = await fetch(
-                `https://api.openweathermap.org/data/2.5/weather?lat=${dam.coordinates.lat}&lon=${dam.coordinates.lon}&units=metric&appid=${API_KEY}&lang=ar`
+                `https://api.openweathermap.org/data/2.5/weather?lat=${d.coordinates.lat}&lon=${d.coordinates.lon}&units=metric&appid=${API_KEY}&lang=ar`
               );
-              const d = await res.json();
-              map[dam.title] = {
-                temp: Math.round(d.main.temp),
-                icon: d.weather?.[0]?.icon,
+              const data = await res.json();
+              map[d.id] = {
+                temp: Math.round(data.main.temp),
+                icon: data.weather?.[0]?.icon,
               };
             } catch {
-              map[dam.title] = { temp: "--", icon: "01d" };
+              map[d.id] = { temp: "--", icon: "01d" };
             }
           } else {
-            map[dam.title] = { temp: "--", icon: "01d" };
+            map[d.id] = { temp: "--", icon: "01d" };
           }
         })
       );
@@ -162,7 +167,7 @@ const DamsPage = () => {
     fetchAll();
   }, [damsData]);
 
-  const openInGoogleMaps = async (dam) => {
+  const openInGoogleMaps = useCallback(async (dam) => {
     try {
       let url;
       if (dam.googleMapsUrl) {
@@ -179,7 +184,17 @@ const DamsPage = () => {
     } catch (error) {
       console.error("Error opening Google Maps:", error);
     }
-  };
+  }, []);
+
+  // تحسين الأداء باستخدام useMemo للبيانات المعالجة
+  const processedDamsData = useMemo(() => {
+    return damsData.map(dam => ({
+      ...dam,
+      hasImages: dam.images && dam.images.length > 0,
+      imagesCount: dam.images ? dam.images.length : 0,
+      firstImage: dam.images && dam.images.length > 0 ? dam.images[0] : null,
+    }));
+  }, [damsData]);
 
   if (loading) {
     return (
@@ -318,15 +333,7 @@ const DamsPage = () => {
             mt: 2,
           }}
         >
-          {damsData.map((dam, idx) => {
-            console.log(`Rendering dam ${idx + 1}:`, {
-              title: dam.title,
-              hasImages: dam.images && dam.images.length > 0,
-              imagesCount: dam.images ? dam.images.length : 0,
-              firstImage:
-                dam.images && dam.images.length > 0 ? dam.images[0] : null,
-            });
-
+          {processedDamsData.map((dam, idx) => {
             return (
               <Fade in timeout={300 + idx * 100} key={dam.id || idx}>
                 <Box
@@ -375,96 +382,53 @@ const DamsPage = () => {
                         alignItems: "center",
                         justifyContent: "center",
                         cursor:
-                          dam.images && dam.images.length > 1
+                          dam.hasImages && dam.imagesCount > 1
                             ? "grab"
                             : "default",
                         "&:active": {
                           cursor:
-                            dam.images && dam.images.length > 1
+                            dam.hasImages && dam.imagesCount > 1
                               ? "grabbing"
                               : "default",
                         },
                       }}
                       onTouchStart={
-                        dam.images && dam.images.length > 1
+                        dam.hasImages && dam.imagesCount > 1
                           ? handleTouchStart
                           : undefined
                       }
                       onTouchMove={
-                        dam.images && dam.images.length > 1
+                        dam.hasImages && dam.imagesCount > 1
                           ? handleTouchMove
                           : undefined
                       }
                       onTouchEnd={
-                        dam.images && dam.images.length > 1
-                          ? () => handleTouchEnd(dam.id, dam.images.length)
+                        dam.hasImages && dam.imagesCount > 1
+                          ? () => handleTouchEnd(dam.id, dam.imagesCount)
                           : undefined
                       }
                       onMouseDown={
-                        dam.images && dam.images.length > 1
+                        dam.hasImages && dam.imagesCount > 1
                           ? handleMouseDown
                           : undefined
                       }
                       onMouseMove={
-                        dam.images && dam.images.length > 1
+                        dam.hasImages && dam.imagesCount > 1
                           ? handleMouseMove
                           : undefined
                       }
                       onMouseUp={
-                        dam.images && dam.images.length > 1
-                          ? () => handleMouseUp(dam.id, dam.images.length)
+                        dam.hasImages && dam.imagesCount > 1
+                          ? () => handleMouseUp(dam.id, dam.imagesCount)
                           : undefined
                       }
                       onMouseLeave={
-                        dam.images && dam.images.length > 1
-                          ? () => handleMouseUp(dam.id, dam.images.length)
+                        dam.hasImages && dam.imagesCount > 1
+                          ? () => handleMouseUp(dam.id, dam.imagesCount)
                           : undefined
                       }
                     >
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 15,
-                          left: 15,
-                          background: "rgba(45, 135, 114, 0.95)",
-                          color: "white",
-                          border: "none",
-                          borderRadius: 2,
-                          width: 70,
-                          height: 40,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          px: 1,
-                          cursor: "pointer",
-                          fontSize: 16,
-                          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
-                          zIndex: 3,
-                        }}
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="white"
-                        >
-                          <path d="M15 13V5c0-1.66-1.34-3-3-3S9 3.34 9 5v8c-1.21.91-2 2.37-2 4 0 2.76 2.24 5 5 5s5-2.24 5-5c0-1.63-.79-3.09-2-4zm-4-8c0-.55.45-1 1-1s1 .45 1 1h-2z" />
-                        </svg>
-                        {weather[dam.title] && (
-                          <Typography
-                            sx={{
-                              fontSize: 14,
-                              fontWeight: "bold",
-                              color: "white",
-                            }}
-                          >
-                            {weather[dam.title].temp}°
-                          </Typography>
-                        )}
-                      </Box>
-
-                      {dam.images &&
-                        dam.images.length > 0 &&
+                      {dam.hasImages &&
                         (() => {
                           const currentIndex = currentImageIndex[dam.id] || 0;
                           const currentImage = dam.images[currentIndex];
@@ -490,32 +454,23 @@ const DamsPage = () => {
                                   objectFit: "cover",
                                   display: "block",
                                   transition: "opacity 0.2s ease-in-out",
+                                  opacity: loadedImages.has(imageUrl) ? 1 : 0.7,
                                 }}
-                                onError={(e) => {
-                                  console.error(
-                                    "Image failed to load:",
-                                    imageUrl
-                                  );
-                                  e.target.style.display = "none";
-                                }}
-                                onLoad={() => {
-                                  console.log(
-                                    "Image loaded successfully:",
-                                    imageUrl.substring(0, 50) + "..."
-                                  );
-                                }}
+                                onError={(e) => handleImageError(e, imageUrl)}
+                                onLoad={() => handleImageLoad(imageUrl)}
+                                loading="lazy"
                               />
                             );
                           }
                           return null;
                         })()}
 
-                      {dam.images && dam.images.length > 1 && (
+                      {dam.hasImages && dam.imagesCount > 1 && (
                         <>
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              handlePrev(dam.id, dam.images.length);
+                              handlePrev(dam.id, dam.imagesCount);
                             }}
                             sx={{
                               position: "absolute",
@@ -540,7 +495,7 @@ const DamsPage = () => {
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleNext(dam.id, dam.images.length);
+                              handleNext(dam.id, dam.imagesCount);
                             }}
                             sx={{
                               position: "absolute",
@@ -565,7 +520,7 @@ const DamsPage = () => {
                         </>
                       )}
 
-                      {dam.images && dam.images.length > 1 && (
+                      {dam.hasImages && dam.imagesCount > 1 && (
                         <Box
                           sx={{
                             position: "absolute",
@@ -607,7 +562,7 @@ const DamsPage = () => {
                         </Box>
                       )}
 
-                      {(!dam.images || dam.images.length === 0) && (
+                      {!dam.hasImages && (
                         <Box
                           sx={{
                             position: "absolute",
@@ -677,7 +632,7 @@ const DamsPage = () => {
                         </Typography>
                       </Box>
 
-                      <Box sx={{ textAlign: "center", mb: "5px" }}>
+                      <Box sx={{ textAlign: "right", mb: "5px" }}>
                         <Typography
                           sx={{
                             mt: "-10px",
@@ -685,7 +640,7 @@ const DamsPage = () => {
                             fontWeight: "bold",
                             color: "#da943c",
                             mb: 1,
-                            textAlign: "center",
+                            textAlign: "right",
                             fontFamily:
                               "ZaridSlab, RH-Zak Reg, Arial, sans-serif",
                           }}
@@ -701,7 +656,7 @@ const DamsPage = () => {
           })}
         </Box>
 
-        {damsData.length === 0 && !loading && (
+        {processedDamsData.length === 0 && !loading && (
           <Box sx={{ textAlign: "center", py: 8 }}>
             <Water
               sx={{ fontSize: 80, color: "rgba(255,255,255,0.3)", mb: 2 }}
@@ -723,7 +678,7 @@ const DamsPage = () => {
                 mb: 4,
               }}
             >
-              كن أول من يضيف سداً جميلاً في بني حسن
+              كن أول من يضيف سد جميل في بني حسن
             </Typography>
           </Box>
         )}

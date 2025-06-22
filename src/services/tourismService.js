@@ -544,9 +544,44 @@ export const getTourismSitesByCategory = async (category) => {
   }
 };
 
-// دالة لجلب الصور من mediaFiles collection
+// إضافة متغيرات التخزين المؤقت
+const imageCache = new Map();
+const mediaFilesCache = new Map();
+let cacheTimeout = null;
+
+// دالة لتنظيف التخزين المؤقت
+const clearCache = () => {
+  imageCache.clear();
+  mediaFilesCache.clear();
+};
+
+// دالة لتنظيف التخزين المؤقت تلقائياً كل 10 دقائق
+const setupCacheCleanup = () => {
+  if (cacheTimeout) {
+    clearTimeout(cacheTimeout);
+  }
+  
+  cacheTimeout = setTimeout(() => {
+    clearCache();
+    setupCacheCleanup(); // إعادة جدولة التنظيف
+  }, 600000); // 10 دقائق
+};
+
+// بدء تنظيف التخزين المؤقت
+setupCacheCleanup();
+
+// دالة محسنة لجلب الصور من mediaFiles مع التخزين المؤقت
 export const getImagesFromMediaFiles = async (siteId, category) => {
   try {
+    // التحقق من التخزين المؤقت أولاً
+    const cacheKey = `${category}_${siteId || 'all'}`;
+    if (mediaFilesCache.has(cacheKey)) {
+      const cached = mediaFilesCache.get(cacheKey);
+      if (Date.now() - cached.timestamp < 300000) { // 5 دقائق
+        return cached.data;
+      }
+    }
+
     // جرب أولاً بالفلترة
     let mediaQuery = query(
       collection(db, 'mediaFiles'), 
@@ -565,7 +600,6 @@ export const getImagesFromMediaFiles = async (siteId, category) => {
     const images = [];
     mediaSnapshot.forEach((doc) => {
       const data = doc.data();
-      console.log("MediaFile document:", doc.id, data);
       
       // تحقق إذا كان الملف مرتبط بهذا الموقع (يمكن أن يكون في اسم الملف أو metadata)
       if (data.base64 || data.url) {
@@ -582,6 +616,12 @@ export const getImagesFromMediaFiles = async (siteId, category) => {
       }
     });
     
+    // حفظ في التخزين المؤقت
+    mediaFilesCache.set(cacheKey, {
+      data: images,
+      timestamp: Date.now()
+    });
+    
     console.log(`Total images found in mediaFiles: ${images.length}`);
     return images;
   } catch (error) {
@@ -590,55 +630,64 @@ export const getImagesFromMediaFiles = async (siteId, category) => {
   }
 };
 
+// دالة محسنة لمعالجة الصور
+const processImages = (data, allMediaImages = []) => {
+  let processedImages = [];
+  
+  if (Array.isArray(data.images)) {
+    processedImages = data.images.map(img => {
+      if (typeof img === 'string') {
+        return { url: img };
+      } else if (img && typeof img === 'object') {
+        return {
+          url: img.url || img.base64 || img.downloadURL,
+          storagePath: img.storagePath,
+          id: img.id,
+          ...img
+        };
+      }
+      return null;
+    }).filter(Boolean);
+  } else if (data.images && typeof data.images === 'object') {
+    Object.values(data.images).forEach(img => {
+      if (typeof img === 'string') {
+        processedImages.push({ url: img });
+      } else if (img && img.url) {
+        processedImages.push(img);
+      }
+    });
+  }
+  
+  // إذا لم توجد صور في البيانات الأساسية، جرب من mediaFiles
+  if (processedImages.length === 0 && allMediaImages.length > 0) {
+    processedImages = allMediaImages.slice(0, 3);
+  }
+  
+  return processedImages;
+};
+
+// دالة محسنة لجلب المواقع السياحية مع تحسينات الأداء
 export const onTourismSitesByCategoryChange = (category, callback) => {
   const q = query(collection(db, 'tourismSites'), where('category', '==', category));
+  
+  let allMediaImages = [];
+  let isFirstLoad = true;
+  let lastProcessedData = null;
   
   const unsubscribe = onSnapshot(q, async (querySnapshot) => {
     const sites = [];
     
-    // جلب جميع الصور من mediaFiles للفئة
-    const allMediaImages = await getImagesFromMediaFiles(null, category);
-    console.log(`Found ${allMediaImages.length} images in mediaFiles for category: ${category}`, allMediaImages);
+    // جلب الصور من mediaFiles فقط في المرة الأولى أو عند الحاجة
+    if (isFirstLoad || allMediaImages.length === 0) {
+      allMediaImages = await getImagesFromMediaFiles(null, category);
+      isFirstLoad = false;
+    }
     
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       
-      // معالجة الصور - التعامل مع الطرق القديمة والجديدة
-      let processedImages = [];
-      
-      if (Array.isArray(data.images)) {
-        processedImages = data.images.map(img => {
-          if (typeof img === 'string') {
-            // الطريقة القديمة - string مباشر
-            return { url: img };
-          } else if (img && typeof img === 'object') {
-            // الطريقة الجديدة - object
-            return {
-              url: img.url || img.base64 || img.downloadURL,
-              storagePath: img.storagePath,
-              id: img.id,
-              ...img
-            };
-          }
-          return null;
-        }).filter(Boolean);
-      } else if (data.images && typeof data.images === 'object') {
-        // في حالة كانت images object وليس array
-        Object.values(data.images).forEach(img => {
-          if (typeof img === 'string') {
-            processedImages.push({ url: img });
-          } else if (img && img.url) {
-            processedImages.push(img);
-          }
-        });
-      }
-      
-      // إذا لم توجد صور في البيانات الأساسية، جرب من mediaFiles
-      if (processedImages.length === 0 && allMediaImages.length > 0) {
-        // يمكنك تحسين هذا المنطق لربط الصور بالموقع المحدد
-        // حالياً سنأخذ أول صورة متاحة كمثال
-        processedImages = allMediaImages.slice(0, 3); // أخذ أول 3 صور
-      }
+      // معالجة الصور المحسنة
+      const processedImages = processImages(data, allMediaImages);
       
       // معالجة الفيديوهات
       let processedVideos = [];
@@ -656,13 +705,38 @@ export const onTourismSitesByCategoryChange = (category, callback) => {
         details: data.details || []
       });
     });
-    callback(sites, null);
+    
+    // التحقق من تغيير البيانات لتجنب التحديثات غير الضرورية
+    const currentDataString = JSON.stringify(sites.map(site => ({ id: site.id, images: site.images })));
+    if (currentDataString !== lastProcessedData) {
+      lastProcessedData = currentDataString;
+      callback(sites, null);
+    }
   }, (error) => {
     console.error("Error listening to tourism sites:", error);
     callback(null, error);
   });
   
   return unsubscribe;
+};
+
+// دالة لتنظيف التخزين المؤقت يدوياً
+export const clearImageCache = () => {
+  clearCache();
+  console.log("Image cache cleared");
+};
+
+// دالة لفحص حالة التخزين المؤقت
+export const getCacheStatus = () => {
+  return {
+    imageCacheSize: imageCache.size,
+    mediaFilesCacheSize: mediaFilesCache.size,
+    cacheEntries: Array.from(mediaFilesCache.entries()).map(([key, value]) => ({
+      key,
+      timestamp: value.timestamp,
+      age: Date.now() - value.timestamp
+    }))
+  };
 };
 
 export const deleteTourismSite = async (siteId) => {

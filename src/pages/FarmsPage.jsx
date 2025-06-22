@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { onTourismSitesByCategoryChange } from "../services/tourismService";
 
 import {
@@ -29,44 +29,45 @@ const FarmsPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [loadedImages, setLoadedImages] = useState(new Set());
 
-  const formatrating = (rating) => {
+  const formatrating = useCallback((rating) => {
     if (!rating) return "--";
     const numRating = parseFloat(rating);
     return Number.isInteger(numRating)
       ? numRating.toFixed(1)
       : numRating.toString();
-  };
+  }, []);
 
   useEffect(() => {
     document.title = "بني حسن - المزارع";
   }, []);
 
-  const handlePrev = (siteId, totalImages) => {
+  const handlePrev = useCallback((siteId, totalImages) => {
     setCurrentImageIndex((prev) => ({
       ...prev,
       [siteId]: ((prev[siteId] || 0) - 1 + totalImages) % totalImages,
     }));
-  };
+  }, []);
 
-  const handleNext = (siteId, totalImages) => {
+  const handleNext = useCallback((siteId, totalImages) => {
     setCurrentImageIndex((prev) => ({
       ...prev,
       [siteId]: ((prev[siteId] || 0) + 1) % totalImages,
     }));
-  };
+  }, []);
 
-  // Ø¯ÙˆØ§Ù„ Ø§Ù„ØªØ¹Ø§Ù…Ù„ Ù…Ø¹ Ø§Ù„Ù„Ù…Ø³ ÙˆØ§Ù„Ù…Ø§ÙˆØ³ Ù„Ù„ØªÙ…Ø±ÙŠØ± Ø§Ù„Ø³Ø±ÙŠØ¹
-  const handleTouchStart = (e) => {
+  // دوال التعامل مع اللمس والماوس للتمرير السريع
+  const handleTouchStart = useCallback((e) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchMove = (e) => {
+  const handleTouchMove = useCallback((e) => {
     setTouchEnd(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchEnd = (farmId, totalImages) => {
+  const handleTouchEnd = useCallback((farmId, totalImages) => {
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
@@ -79,21 +80,21 @@ const FarmsPage = () => {
     if (isRightSwipe) {
       handlePrev(farmId, totalImages);
     }
-  };
+  }, [touchStart, touchEnd, handleNext, handlePrev]);
 
-  // Ø¯ÙˆØ§Ù„ Ø§Ù„ØªØ¹Ø§Ù…Ù„ Ù…Ø¹ Ø§Ù„Ù…Ø§ÙˆØ³
-  const handleMouseDown = (e) => {
+  // دوال التعامل مع الماوس
+  const handleMouseDown = useCallback((e) => {
     setTouchEnd(null);
     setTouchStart(e.clientX);
-  };
+  }, []);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (touchStart !== null) {
       setTouchEnd(e.clientX);
     }
-  };
+  }, [touchStart]);
 
-  const handleMouseUp = (farmId, totalImages) => {
+  const handleMouseUp = useCallback((farmId, totalImages) => {
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
@@ -109,7 +110,18 @@ const FarmsPage = () => {
 
     setTouchStart(null);
     setTouchEnd(null);
-  };
+  }, [touchStart, touchEnd, handleNext, handlePrev]);
+
+  // دالة لمعالجة تحميل الصور
+  const handleImageLoad = useCallback((imageUrl) => {
+    setLoadedImages(prev => new Set(prev).add(imageUrl));
+  }, []);
+
+  // دالة لمعالجة أخطاء الصور
+  const handleImageError = useCallback((e, imageUrl) => {
+    console.error("Image failed to load:", imageUrl);
+    e.target.style.display = "none";
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -122,13 +134,6 @@ const FarmsPage = () => {
           setFarmsData([]);
         } else {
           console.log("Farms data received:", sites);
-          sites.forEach((farm, index) => {
-            console.log(`Farm ${index + 1} (${farm.title}):`, {
-              id: farm.id,
-              images: farm.images,
-              hasImages: farm.images && farm.images.length > 0,
-            });
-          });
           setFarmsData(sites);
           setError(null);
         }
@@ -139,7 +144,7 @@ const FarmsPage = () => {
     return () => unsubscribe();
   }, []);
 
-  const openInGoogleMaps = async (farm) => {
+  const openInGoogleMaps = useCallback(async (farm) => {
     try {
       let url;
       if (farm.googleMapsUrl) {
@@ -156,7 +161,17 @@ const FarmsPage = () => {
     } catch (error) {
       console.error("Error opening Google Maps:", error);
     }
-  };
+  }, []);
+
+  // تحسين الأداء باستخدام useMemo للبيانات المعالجة
+  const processedFarmsData = useMemo(() => {
+    return farmsData.map(farm => ({
+      ...farm,
+      hasImages: farm.images && farm.images.length > 0,
+      imagesCount: farm.images ? farm.images.length : 0,
+      firstImage: farm.images && farm.images.length > 0 ? farm.images[0] : null,
+    }));
+  }, [farmsData]);
 
   if (loading) {
     return (
@@ -295,15 +310,7 @@ const FarmsPage = () => {
             mt: 2,
           }}
         >
-          {farmsData.map((farm, idx) => {
-            console.log(`Rendering farm ${idx + 1}:`, {
-              title: farm.title,
-              hasImages: farm.images && farm.images.length > 0,
-              imagesCount: farm.images ? farm.images.length : 0,
-              firstImage:
-                farm.images && farm.images.length > 0 ? farm.images[0] : null,
-            });
-
+          {processedFarmsData.map((farm, idx) => {
             return (
               <Fade in timeout={300 + idx * 100} key={farm.id || idx}>
                 <Box
@@ -352,49 +359,49 @@ const FarmsPage = () => {
                         alignItems: "center",
                         justifyContent: "center",
                         cursor:
-                          farm.images && farm.images.length > 1
+                          farm.hasImages && farm.imagesCount > 1
                             ? "grab"
                             : "default",
                         "&:active": {
                           cursor:
-                            farm.images && farm.images.length > 1
+                            farm.hasImages && farm.imagesCount > 1
                               ? "grabbing"
                               : "default",
                         },
                       }}
                       onTouchStart={
-                        farm.images && farm.images.length > 1
+                        farm.hasImages && farm.imagesCount > 1
                           ? handleTouchStart
                           : undefined
                       }
                       onTouchMove={
-                        farm.images && farm.images.length > 1
+                        farm.hasImages && farm.imagesCount > 1
                           ? handleTouchMove
                           : undefined
                       }
                       onTouchEnd={
-                        farm.images && farm.images.length > 1
-                          ? () => handleTouchEnd(farm.id, farm.images.length)
+                        farm.hasImages && farm.imagesCount > 1
+                          ? () => handleTouchEnd(farm.id, farm.imagesCount)
                           : undefined
                       }
                       onMouseDown={
-                        farm.images && farm.images.length > 1
+                        farm.hasImages && farm.imagesCount > 1
                           ? handleMouseDown
                           : undefined
                       }
                       onMouseMove={
-                        farm.images && farm.images.length > 1
+                        farm.hasImages && farm.imagesCount > 1
                           ? handleMouseMove
                           : undefined
                       }
                       onMouseUp={
-                        farm.images && farm.images.length > 1
-                          ? () => handleMouseUp(farm.id, farm.images.length)
+                        farm.hasImages && farm.imagesCount > 1
+                          ? () => handleMouseUp(farm.id, farm.imagesCount)
                           : undefined
                       }
                       onMouseLeave={
-                        farm.images && farm.images.length > 1
-                          ? () => handleMouseUp(farm.id, farm.images.length)
+                        farm.hasImages && farm.imagesCount > 1
+                          ? () => handleMouseUp(farm.id, farm.imagesCount)
                           : undefined
                       }
                     >
@@ -433,8 +440,7 @@ const FarmsPage = () => {
                         </Typography>
                       </Box>
 
-                      {farm.images &&
-                        farm.images.length > 0 &&
+                      {farm.hasImages &&
                         (() => {
                           const currentIndex = currentImageIndex[farm.id] || 0;
                           const currentImage = farm.images[currentIndex];
@@ -460,32 +466,23 @@ const FarmsPage = () => {
                                   objectFit: "cover",
                                   display: "block",
                                   transition: "opacity 0.2s ease-in-out",
+                                  opacity: loadedImages.has(imageUrl) ? 1 : 0.7,
                                 }}
-                                onError={(e) => {
-                                  console.error(
-                                    "Image failed to load:",
-                                    imageUrl
-                                  );
-                                  e.target.style.display = "none";
-                                }}
-                                onLoad={() => {
-                                  console.log(
-                                    "Image loaded successfully:",
-                                    imageUrl.substring(0, 50) + "..."
-                                  );
-                                }}
+                                onError={(e) => handleImageError(e, imageUrl)}
+                                onLoad={() => handleImageLoad(imageUrl)}
+                                loading="lazy"
                               />
                             );
                           }
                           return null;
                         })()}
 
-                      {farm.images && farm.images.length > 1 && (
+                      {farm.hasImages && farm.imagesCount > 1 && (
                         <>
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              handlePrev(farm.id, farm.images.length);
+                              handlePrev(farm.id, farm.imagesCount);
                             }}
                             sx={{
                               position: "absolute",
@@ -510,7 +507,7 @@ const FarmsPage = () => {
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleNext(farm.id, farm.images.length);
+                              handleNext(farm.id, farm.imagesCount);
                             }}
                             sx={{
                               position: "absolute",
@@ -535,7 +532,7 @@ const FarmsPage = () => {
                         </>
                       )}
 
-                      {farm.images && farm.images.length > 1 && (
+                      {farm.hasImages && farm.imagesCount > 1 && (
                         <Box
                           sx={{
                             position: "absolute",
@@ -577,7 +574,7 @@ const FarmsPage = () => {
                         </Box>
                       )}
 
-                      {(!farm.images || farm.images.length === 0) && (
+                      {!farm.hasImages && (
                         <Box
                           sx={{
                             position: "absolute",
@@ -671,7 +668,7 @@ const FarmsPage = () => {
           })}
         </Box>
 
-        {farmsData.length === 0 && !loading && (
+        {processedFarmsData.length === 0 && !loading && (
           <Box sx={{ textAlign: "center", py: 8 }}>
             <Agriculture
               sx={{ fontSize: 80, color: "rgba(255,255,255,0.3)", mb: 2 }}

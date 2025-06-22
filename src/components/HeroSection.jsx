@@ -3,9 +3,10 @@ import { Box, Typography, IconButton, Container } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import './components.css';
 import { motion } from "framer-motion";
+import { ensureVideoExists } from '../services/firebaseStorageService';
 
 import logoMain from "../assets/LOGO.svg";
-import headerVideo from "../assets/header_video.mp4";
+// import headerVideo from "../assets/header_video.mp4"; // تم إزالة الفيديو المحلي
 import logoMunicipality from "../assets/AlBaha-Municipality-White.png";
 import logoHealthCity from "../assets/Banni-Hassan-Health-city-White.png";
 import logoEmirate from "../assets/Emirate2.svg";
@@ -20,6 +21,9 @@ export default function HeroSection() {
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [videoError, setVideoError] = useState(null);
+  const [isFallback, setIsFallback] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 500);
@@ -39,6 +43,39 @@ export default function HeroSection() {
       clearTimeout(timer);
       window.removeEventListener('resize', checkScreenSize);
     };
+  }, []);
+
+  // تحميل الفيديو من Firebase Storage مع fallback
+  useEffect(() => {
+    const loadVideoFromStorage = async () => {
+      try {
+        setVideoError(null);
+        setIsFallback(false);
+        
+        // استخدام Firebase Storage مع fallback URL
+        const videoData = await ensureVideoExists(
+          'header_video.mp4', 
+          'https://firebasestorage.googleapis.com/v0/b/bannihassan-e4c61.appspot.com/o/header_video.mp4?alt=media'
+        );
+        
+        setVideoUrl(videoData.url);
+        setVideoLoaded(true);
+        setIsFallback(videoData.isFallback || false);
+        
+        console.log('Video loaded successfully:', videoData);
+        
+        if (videoData.isFallback) {
+          console.log('Using fallback video URL');
+        }
+        
+      } catch (error) {
+        console.error('Error loading video:', error);
+        setVideoError(error.message);
+        setVideoLoaded(false);
+      }
+    };
+
+    loadVideoFromStorage();
   }, []);
 
   const scrollToNextSection = () => {
@@ -205,17 +242,40 @@ export default function HeroSection() {
           className="hero-corner-pattern-img"
         />
       </Box>
-      <Box className="hero-video-box">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className="hero-background-video"
-        >
-          <source src={headerVideo} type="video/mp4" />
-        </video>
+      <Box className={`hero-video-box ${videoError ? 'hero-video-error' : !videoLoaded ? 'hero-video-loading' : ''}`}>
+        {videoLoaded && videoUrl ? (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            className="hero-background-video"
+            onLoadStart={() => console.log('Video loading started')}
+            onCanPlay={() => console.log('Video can play')}
+            onError={(e) => {
+              console.error('Video error:', e);
+              setVideoError('خطأ في تشغيل الفيديو');
+              setVideoLoaded(false);
+            }}
+          >
+            <source src={videoUrl} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        ) : videoError ? (
+          // عرض رسالة الخطأ مع خلفية بديلة
+          <Box className="video-error-message">
+            <Typography variant="body2" className="error-text">
+              {videoError}
+            </Typography>
+            <Typography variant="caption" className="fallback-text">
+              جاري تحميل المحتوى البديل...
+            </Typography>
+          </Box>
+        ) : (
+          // Loading state مع spinner
+          <Box className="video-loading-spinner" />
+        )}
       </Box>
       <Box className="hero-logos-left">
         <img src={logoMunicipality} alt="بلدية الباحة" className="hero-logo-img" />

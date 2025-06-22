@@ -454,7 +454,7 @@ const CafeDetailsPage = () => {
               },
             }}
           >
-            Ù†Ø¨Ø°Ø© Ø¹Ù† {cafe.title}
+              {cafe.title}
           </Typography>
           <Typography
             sx={{

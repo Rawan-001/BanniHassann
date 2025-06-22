@@ -307,17 +307,22 @@ export const getStorageStats = async (folder = 'tourismSites') => {
     const auth = getAuth();
     const user = auth.currentUser;
     
+    if (!user) {
+      throw new Error('يجب تسجيل الدخول أولاً');
+    }
+
+    const storageRef = ref(storage, folder);
+    const metadata = await getMetadata(storageRef);
+    
     return {
       folder: folder,
-      user: user?.email || 'غير مسجل',
-      message: 'للحصول على إحصائيات دقيقة، استخدم Firebase Console',
-      consoleUrl: `https://console.firebase.google.com/project/bannihassan-e4c61/storage`,
-      storageUrl: `https://firebasestorage.googleapis.com/v0/b/${BUCKET_NAME}/o`,
-      timestamp: new Date().toISOString()
+      size: metadata.size || 0,
+      updated: metadata.updated || new Date().toISOString(),
+      customMetadata: metadata.customMetadata || {}
     };
-    
   } catch (error) {
-    return { error: error.message };
+    console.error('Error getting storage stats:', error);
+    throw error;
   }
 };
 
@@ -330,6 +335,182 @@ const saveToFirestore = async (fileDetails) => {
     return docRef.id;
   } catch (error) {
     return null;
+  }
+};
+
+export const getVideoFromStorage = async (videoPath = 'header_video.mp4') => {
+  try {
+    const videoRef = ref(storage, videoPath);
+    const url = await getDownloadURL(videoRef);
+    
+    console.log(`Video loaded successfully from Firebase Storage: ${videoPath}`);
+    
+    return {
+      url,
+      path: videoPath,
+      isFirebaseStorage: true,
+      loadedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error(`Error loading video from Firebase Storage (${videoPath}):`, error);
+    
+    // في حالة فشل التحميل، يمكن إرجاع fallback URL أو null
+    if (error.code === 'storage/object-not-found') {
+      throw new Error(`الفيديو غير موجود في المسار: ${videoPath}`);
+    } else if (error.code === 'storage/unauthorized') {
+      throw new Error('ليس لديك صلاحية للوصول إلى هذا الفيديو');
+    } else {
+      throw new Error(`خطأ في تحميل الفيديو: ${error.message}`);
+    }
+  }
+};
+
+export const uploadVideoToStorage = async (videoFile, folder = 'videos', options = {}) => {
+  try {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    
+    if (!user) {
+      throw new Error('يجب تسجيل الدخول أولاً لرفع الفيديو');
+    }
+
+    if (!videoFile.type.startsWith('video/')) {
+      throw new Error('الملف المحدد ليس فيديو');
+    }
+
+    const {
+      onProgress = null,
+      maxSize = 100 * 1024 * 1024 // 100MB limit for videos
+    } = options;
+
+    if (videoFile.size > maxSize) {
+      throw new Error(`حجم الفيديو كبير جداً. الحد الأقصى ${Math.round(maxSize / (1024 * 1024))} ميجابايت.`);
+    }
+
+    const fileId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const fileName = `${fileId}_${videoFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    
+    const storageRef = ref(storage, `${folder}/${fileName}`);
+    
+    const metadata = {
+      contentType: videoFile.type,
+      cacheControl: 'public,max-age=31536000',
+      customMetadata: {
+        originalName: videoFile.name,
+        originalSize: videoFile.size.toString(),
+        uploadedAt: new Date().toISOString(),
+        fileId: fileId,
+        uploadedBy: user.email || user.uid,
+        folder: folder,
+        fileType: 'video'
+      }
+    };
+    
+    const uploadTask = uploadBytesResumable(storageRef, videoFile, metadata);
+    
+    let lastReportedProgress = 0;
+    
+    await new Promise((resolve, reject) => {
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          
+          if (progress - lastReportedProgress >= 5 || progress >= 100) {
+            lastReportedProgress = progress;
+            
+            if (onProgress) {
+              onProgress(progress);
+            }
+          }
+        },
+        (error) => {
+          reject(error);
+        },
+        () => {
+          resolve();
+        }
+      );
+    });
+    
+    const downloadURL = await getDownloadURL(storageRef);
+    
+    return {
+      id: fileId,
+      url: downloadURL,
+      name: videoFile.name,
+      type: videoFile.type,
+      size: videoFile.size,
+      storagePath: storageRef.fullPath,
+      storageRef: storageRef.name,
+      folder: folder,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: user.email || user.uid,
+      isFirebaseStorage: true,
+      metadata: metadata
+    };
+    
+  } catch (error) {
+    console.error('Error uploading video to Firebase Storage:', error);
+    throw error;
+  }
+};
+
+// دالة لاختبار وجود الفيديو في Firebase Storage
+export const checkVideoExists = async (videoPath = 'header_video.mp4') => {
+  try {
+    const videoRef = ref(storage, videoPath);
+    const metadata = await getMetadata(videoRef);
+    
+    console.log(`Video exists in Firebase Storage: ${videoPath}`, metadata);
+    
+    return {
+      exists: true,
+      path: videoPath,
+      metadata: metadata,
+      size: metadata.size,
+      contentType: metadata.contentType,
+      updated: metadata.updated
+    };
+  } catch (error) {
+    console.error(`Video does not exist in Firebase Storage: ${videoPath}`, error);
+    
+    return {
+      exists: false,
+      path: videoPath,
+      error: error.message,
+      code: error.code
+    };
+  }
+};
+
+// دالة لرفع الفيديو إذا لم يكن موجوداً
+export const ensureVideoExists = async (videoPath = 'header_video.mp4', fallbackUrl = null) => {
+  try {
+    // التحقق من وجود الفيديو
+    const checkResult = await checkVideoExists(videoPath);
+    
+    if (checkResult.exists) {
+      console.log('Video already exists in Firebase Storage');
+      return await getVideoFromStorage(videoPath);
+    }
+    
+    // إذا لم يكن الفيديو موجوداً وتم توفير fallback URL
+    if (fallbackUrl) {
+      console.log('Video not found, using fallback URL');
+      return {
+        url: fallbackUrl,
+        path: videoPath,
+        isFirebaseStorage: false,
+        isFallback: true,
+        loadedAt: new Date().toISOString()
+      };
+    }
+    
+    throw new Error(`الفيديو غير موجود في المسار: ${videoPath}`);
+    
+  } catch (error) {
+    console.error('Error ensuring video exists:', error);
+    throw error;
   }
 };
 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { onTourismSitesByCategoryChange } from "../services/tourismService";
 
 import {
@@ -24,40 +24,45 @@ const CafesPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [loadedImages, setLoadedImages] = useState(new Set());
 
-  const formatrating = (rating) => {
+  const formatrating = useCallback((rating) => {
     if (!rating) return "--";
     const numRating = parseFloat(rating);
     return Number.isInteger(numRating)
       ? numRating.toFixed(1)
       : numRating.toString();
-  };
+  }, []);
 
-  const handlePrev = (siteId, totalImages) => {
+  useEffect(() => {
+    document.title = "بني حسن - المقاهي";
+  }, []);
+
+  const handlePrev = useCallback((siteId, totalImages) => {
     setCurrentImageIndex((prev) => ({
       ...prev,
       [siteId]: ((prev[siteId] || 0) - 1 + totalImages) % totalImages,
     }));
-  };
+  }, []);
 
-  const handleNext = (siteId, totalImages) => {
+  const handleNext = useCallback((siteId, totalImages) => {
     setCurrentImageIndex((prev) => ({
       ...prev,
       [siteId]: ((prev[siteId] || 0) + 1) % totalImages,
     }));
-  };
+  }, []);
 
-  // Ø¯ÙˆØ§Ù„ Ø§Ù„ØªØ¹Ø§Ù…Ù„ Ù…Ø¹ Ø§Ù„Ù„Ù…Ø³ ÙˆØ§Ù„Ù…Ø§ÙˆØ³ Ù„Ù„ØªÙ…Ø±ÙŠØ± Ø§Ù„Ø³Ø±ÙŠØ¹
-  const handleTouchStart = (e) => {
+  // دوال التعامل مع اللمس والماوس للتمرير السريع
+  const handleTouchStart = useCallback((e) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchMove = (e) => {
+  const handleTouchMove = useCallback((e) => {
     setTouchEnd(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const handleTouchEnd = (cafeId, totalImages) => {
+  const handleTouchEnd = useCallback((cafeId, totalImages) => {
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
@@ -70,25 +75,21 @@ const CafesPage = () => {
     if (isRightSwipe) {
       handlePrev(cafeId, totalImages);
     }
-  };
+  }, [touchStart, touchEnd, handleNext, handlePrev]);
 
-  useEffect(() => {
-    document.title = "بني حسن - المقاهي";
-  }, []);
-
-  // Ø¯ÙˆØ§Ù„ Ø§Ù„ØªØ¹Ø§Ù…Ù„ Ù…Ø¹ Ø§Ù„Ù…Ø§ÙˆØ³
-  const handleMouseDown = (e) => {
+  // دوال التعامل مع الماوس
+  const handleMouseDown = useCallback((e) => {
     setTouchEnd(null);
     setTouchStart(e.clientX);
-  };
+  }, []);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (touchStart !== null) {
       setTouchEnd(e.clientX);
     }
-  };
+  }, [touchStart]);
 
-  const handleMouseUp = (cafeId, totalImages) => {
+  const handleMouseUp = useCallback((cafeId, totalImages) => {
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
@@ -104,7 +105,18 @@ const CafesPage = () => {
 
     setTouchStart(null);
     setTouchEnd(null);
-  };
+  }, [touchStart, touchEnd, handleNext, handlePrev]);
+
+  // دالة لمعالجة تحميل الصور
+  const handleImageLoad = useCallback((imageUrl) => {
+    setLoadedImages(prev => new Set(prev).add(imageUrl));
+  }, []);
+
+  // دالة لمعالجة أخطاء الصور
+  const handleImageError = useCallback((e, imageUrl) => {
+    console.error("Image failed to load:", imageUrl);
+    e.target.style.display = "none";
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -117,13 +129,6 @@ const CafesPage = () => {
           setCafesData([]);
         } else {
           console.log("Cafes data received:", sites);
-          sites.forEach((cafe, index) => {
-            console.log(`Cafe ${index + 1} (${cafe.title}):`, {
-              id: cafe.id,
-              images: cafe.images,
-              hasImages: cafe.images && cafe.images.length > 0,
-            });
-          });
           setCafesData(sites);
           setError(null);
         }
@@ -134,7 +139,7 @@ const CafesPage = () => {
     return () => unsubscribe();
   }, []);
 
-  const openInGoogleMaps = async (cafe) => {
+  const openInGoogleMaps = useCallback(async (cafe) => {
     try {
       let url;
       if (cafe.googleMapsUrl) {
@@ -151,7 +156,17 @@ const CafesPage = () => {
     } catch (error) {
       console.error("Error opening Google Maps:", error);
     }
-  };
+  }, []);
+
+  // تحسين الأداء باستخدام useMemo للبيانات المعالجة
+  const processedCafesData = useMemo(() => {
+    return cafesData.map(cafe => ({
+      ...cafe,
+      hasImages: cafe.images && cafe.images.length > 0,
+      imagesCount: cafe.images ? cafe.images.length : 0,
+      firstImage: cafe.images && cafe.images.length > 0 ? cafe.images[0] : null,
+    }));
+  }, [cafesData]);
 
   if (loading) {
     return (
@@ -290,15 +305,7 @@ const CafesPage = () => {
             mt: 2,
           }}
         >
-          {cafesData.map((cafe, idx) => {
-            console.log(`Rendering cafe ${idx + 1}:`, {
-              title: cafe.title,
-              hasImages: cafe.images && cafe.images.length > 0,
-              imagesCount: cafe.images ? cafe.images.length : 0,
-              firstImage:
-                cafe.images && cafe.images.length > 0 ? cafe.images[0] : null,
-            });
-
+          {processedCafesData.map((cafe, idx) => {
             return (
               <Fade in timeout={300 + idx * 100} key={cafe.id || idx}>
                 <Box
@@ -347,49 +354,49 @@ const CafesPage = () => {
                         alignItems: "center",
                         justifyContent: "center",
                         cursor:
-                          cafe.images && cafe.images.length > 1
+                          cafe.hasImages && cafe.imagesCount > 1
                             ? "grab"
                             : "default",
                         "&:active": {
                           cursor:
-                            cafe.images && cafe.images.length > 1
+                            cafe.hasImages && cafe.imagesCount > 1
                               ? "grabbing"
                               : "default",
                         },
                       }}
                       onTouchStart={
-                        cafe.images && cafe.images.length > 1
+                        cafe.hasImages && cafe.imagesCount > 1
                           ? handleTouchStart
                           : undefined
                       }
                       onTouchMove={
-                        cafe.images && cafe.images.length > 1
+                        cafe.hasImages && cafe.imagesCount > 1
                           ? handleTouchMove
                           : undefined
                       }
                       onTouchEnd={
-                        cafe.images && cafe.images.length > 1
-                          ? () => handleTouchEnd(cafe.id, cafe.images.length)
+                        cafe.hasImages && cafe.imagesCount > 1
+                          ? () => handleTouchEnd(cafe.id, cafe.imagesCount)
                           : undefined
                       }
                       onMouseDown={
-                        cafe.images && cafe.images.length > 1
+                        cafe.hasImages && cafe.imagesCount > 1
                           ? handleMouseDown
                           : undefined
                       }
                       onMouseMove={
-                        cafe.images && cafe.images.length > 1
+                        cafe.hasImages && cafe.imagesCount > 1
                           ? handleMouseMove
                           : undefined
                       }
                       onMouseUp={
-                        cafe.images && cafe.images.length > 1
-                          ? () => handleMouseUp(cafe.id, cafe.images.length)
+                        cafe.hasImages && cafe.imagesCount > 1
+                          ? () => handleMouseUp(cafe.id, cafe.imagesCount)
                           : undefined
                       }
                       onMouseLeave={
-                        cafe.images && cafe.images.length > 1
-                          ? () => handleMouseUp(cafe.id, cafe.images.length)
+                        cafe.hasImages && cafe.imagesCount > 1
+                          ? () => handleMouseUp(cafe.id, cafe.imagesCount)
                           : undefined
                       }
                     >
@@ -428,8 +435,7 @@ const CafesPage = () => {
                         </Typography>
                       </Box>
 
-                      {cafe.images &&
-                        cafe.images.length > 0 &&
+                      {cafe.hasImages &&
                         (() => {
                           const currentIndex = currentImageIndex[cafe.id] || 0;
                           const currentImage = cafe.images[currentIndex];
@@ -455,32 +461,23 @@ const CafesPage = () => {
                                   objectFit: "cover",
                                   display: "block",
                                   transition: "opacity 0.2s ease-in-out",
+                                  opacity: loadedImages.has(imageUrl) ? 1 : 0.7,
                                 }}
-                                onError={(e) => {
-                                  console.error(
-                                    "Image failed to load:",
-                                    imageUrl
-                                  );
-                                  e.target.style.display = "none";
-                                }}
-                                onLoad={() => {
-                                  console.log(
-                                    "Image loaded successfully:",
-                                    imageUrl.substring(0, 50) + "..."
-                                  );
-                                }}
+                                onError={(e) => handleImageError(e, imageUrl)}
+                                onLoad={() => handleImageLoad(imageUrl)}
+                                loading="lazy"
                               />
                             );
                           }
                           return null;
                         })()}
 
-                      {cafe.images && cafe.images.length > 1 && (
+                      {cafe.hasImages && cafe.imagesCount > 1 && (
                         <>
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              handlePrev(cafe.id, cafe.images.length);
+                              handlePrev(cafe.id, cafe.imagesCount);
                             }}
                             sx={{
                               position: "absolute",
@@ -505,7 +502,7 @@ const CafesPage = () => {
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleNext(cafe.id, cafe.images.length);
+                              handleNext(cafe.id, cafe.imagesCount);
                             }}
                             sx={{
                               position: "absolute",
@@ -530,7 +527,7 @@ const CafesPage = () => {
                         </>
                       )}
 
-                      {cafe.images && cafe.images.length > 1 && (
+                      {cafe.hasImages && cafe.imagesCount > 1 && (
                         <Box
                           sx={{
                             position: "absolute",
@@ -572,7 +569,7 @@ const CafesPage = () => {
                         </Box>
                       )}
 
-                      {(!cafe.images || cafe.images.length === 0) && (
+                      {!cafe.hasImages && (
                         <Box
                           sx={{
                             position: "absolute",
@@ -666,7 +663,7 @@ const CafesPage = () => {
           })}
         </Box>
 
-        {cafesData.length === 0 && !loading && (
+        {processedCafesData.length === 0 && !loading && (
           <Box sx={{ textAlign: "center", py: 8 }}>
             <LocalCafe
               sx={{ fontSize: 80, color: "rgba(255,255,255,0.3)", mb: 2 }}
