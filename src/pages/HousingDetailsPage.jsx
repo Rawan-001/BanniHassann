@@ -204,17 +204,17 @@ const HousingDetailsPage = () => {
       <Box
         sx={{
           width: "90%",
-          maxWidth: 800,
+          maxWidth: { xs: 800, lg: 1000, xl: 1200 },
           mx: "auto",
           borderRadius: { xs: 3, sm: 4, md: 5 },
           overflow: "hidden",
-          mb: { xs: 1, sm: 1.5, md: 1 },
+          mb: { xs: 1, sm: 1.5, md: 2, lg: 4 },
           boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
           position: "relative",
           background: "#222",
           zIndex: 2,
-          height: { xs: 280, sm: 250, md: 220, lg: 300 },
-          mt: { xs: 2, sm: 3, md: 4 },
+          height: { xs: 280, sm: 250, md: 220, lg: 300, xl: 350 },
+          mt: { xs: 2, sm: 3, md: 4, lg: 6 },
         }}
       >
         {housing.images && housing.images.length > 0 && (
@@ -310,20 +310,20 @@ const HousingDetailsPage = () => {
         sx={{
           display: "flex",
           flexDirection: { xs: "column", md: "row-reverse" },
-          gap: { xs: 2, sm: 3, md: 4 },
+          gap: { xs: 2, sm: 3, md: 6, lg: 8 },
           alignItems: "flex-start",
           justifyContent: "center",
-          maxWidth: 950,
+          maxWidth: { xs: 950, lg: 1200, xl: 1400 },
           mx: "auto",
-          mb: { xs: 2, sm: 2.5, md: 3 },
-          px: { xs: 2, sm: 3, md: 4 },
+          mb: { xs: 2, sm: 2.5, md: 4, lg: 6 },
+          px: { xs: 2, sm: 3, md: 4, lg: 6 },
         }}
       >
         {/* الكارد الصغير في اليسار */}
         <Box
           sx={{
-            minWidth: { xs: "100%", md: 270 },
-            maxWidth: { xs: "100%", md: 320 },
+            minWidth: { xs: "100%", md: 240, lg: 260 },
+            maxWidth: { xs: "100%", md: 300, lg: 320 },
             width: "100%",
             bgcolor: "#2d8772",
             borderRadius: { xs: 2, sm: 2.5, md: 3 },
@@ -331,23 +331,22 @@ const HousingDetailsPage = () => {
             boxShadow: "0 2px 12px rgba(0,0,0,0.18)",
             mb: { xs: 2, md: 0 },
             order: { xs: 2, md: 1 },
-            mt: { xs: 2, sm: 3, md: 4 },
+            mt: { xs: 2, sm: 3, md: 4, lg: 6 },
           }}
         >
-          {/* الإطار الأبيض الداخلي */}
           <Box
             sx={{
               width: "94%",
-              height: 90,
+              height: { xs: 55, sm: 50, md: 55, lg: 85, xl: 95 },
               mx: "auto",
-              mt: 1,
-              mb: 1,
+              mt: { xs: 0.5, sm: 1, md: 1.5, lg: 2 },
+              mb: { xs: 0.5, sm: 1, md: 1.5, lg: 2 },
               border: "3px solid #fff",
               borderRadius: { xs: 1.5, sm: 2, md: 2.5 },
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              px: 3,
+              justifyContent: "space-between",
+              px: { xs: 2, sm: 2.5, md: 3, lg: 4 },
               py: 0,
               position: "relative",
               bgcolor: "transparent",
@@ -378,6 +377,16 @@ const HousingDetailsPage = () => {
                   : "--"}
               </Typography>
             </Box>
+            <Box
+              sx={{
+                width: "2px",
+                height: { xs: 55, sm: 50, md: 55, lg: 85, xl: 95 },
+                bgcolor: "rgba(255,255,255,0.8)",
+                mx: 2,
+                borderRadius: 1,
+                flexShrink: 0,
+              }}
+            />
           </Box>
           {/* زر الوصول للموقع */}
           <Button
@@ -556,7 +565,7 @@ const HousingDetailsPage = () => {
                           style={{
                             width: "100%",
                             height: "100%",
-                            opacity: 0.5,
+                            opacity: 0.7,
                           }}
                         />
                         <Box
@@ -576,7 +585,7 @@ const HousingDetailsPage = () => {
                       </Box>
                       <Typography
                         sx={{
-                          color: "#17998c",
+                          color: "#ffffff",
                           fontWeight: "bold",
                           fontSize: 16,
                           fontFamily: "Tajawal, Arial, sans-serif",
