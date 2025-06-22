@@ -16,7 +16,7 @@
 
 .loading-text {
   color: #fff;
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
   margin-top: 16px;
 }
 
@@ -32,10 +32,14 @@
 }
 
 .hero-section::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(26,26,46,0.9) 0%, rgba(26,26,46,0.6) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(26, 26, 46, 0.9) 0%,
+    rgba(26, 26, 46, 0.6) 100%
+  );
 }
 
 .hero-content {
@@ -45,18 +49,18 @@
 }
 
 .hero-title {
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
   font-weight: bold;
   font-size: 3.5rem;
   color: #fff;
-  text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   margin-bottom: 16px;
 }
 
 .hero-subtitle {
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
   font-size: 1rem;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
   max-width: 700px;
   margin: 0 auto;
   line-height: 1.6;
@@ -71,10 +75,10 @@
 }
 
 .nav-button-primary {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   color: #fff;
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
   font-weight: bold;
   border-radius: 8px;
   padding: 8px 32px;
@@ -86,11 +90,11 @@
 }
 
 .nav-button-primary:hover {
-  background: rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .nav-button-outline {
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
   border-radius: 4px;
   padding: 8px 16px;
   border: 1px solid;
@@ -99,7 +103,7 @@
 }
 
 .nav-button-outline:hover {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Category-specific button colors */
@@ -109,58 +113,58 @@
 }
 
 .nav-button-viewpoints:hover {
-  background: rgba(108,92,231,0.1);
+  background: rgba(108, 92, 231, 0.1);
   border-color: #8b7ff0;
 }
 
 .nav-button-parks {
-  color: #228B22;
-  border-color: #228B22;
+  color: #228b22;
+  border-color: #228b22;
 }
 
 .nav-button-parks:hover {
-  background: rgba(34,139,34,0.1);
-  border-color: #32CD32;
+  background: rgba(34, 139, 34, 0.1);
+  border-color: #32cd32;
 }
 
 .nav-button-housing {
-  color: #CD853F;
-  border-color: #CD853F;
+  color: #cd853f;
+  border-color: #cd853f;
 }
 
 .nav-button-housing:hover {
-  background: rgba(205,133,63,0.1);
-  border-color: #DEB887;
+  background: rgba(205, 133, 63, 0.1);
+  border-color: #deb887;
 }
 
 .nav-button-farms {
-  color: #8FBC8F;
-  border-color: #8FBC8F;
+  color: #8fbc8f;
+  border-color: #8fbc8f;
 }
 
 .nav-button-farms:hover {
-  background: rgba(143,188,143,0.1);
-  border-color: #9ACD32;
+  background: rgba(143, 188, 143, 0.1);
+  border-color: #9acd32;
 }
 
 .nav-button-dams {
-  color: #4682B4;
-  border-color: #4682B4;
+  color: #4682b4;
+  border-color: #4682b4;
 }
 
 .nav-button-dams:hover {
-  background: rgba(70,130,180,0.1);
-  border-color: #87CEEB;
+  background: rgba(70, 130, 180, 0.1);
+  border-color: #87ceeb;
 }
 
 .nav-button-cafes {
-  color: #8B4513;
-  border-color: #8B4513;
+  color: #8b4513;
+  border-color: #8b4513;
 }
 
 .nav-button-cafes:hover {
-  background: rgba(139,69,19,0.1);
-  border-color: #CD853F;
+  background: rgba(139, 69, 19, 0.1);
+  border-color: #cd853f;
 }
 
 /* Alert */
@@ -194,12 +198,16 @@
 
 .site-card {
   width: 100%;
-  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
@@ -215,27 +223,27 @@
 
 /* Category-specific hover effects */
 .site-card-viewpoints:hover {
-  box-shadow: 0 12px 40px rgba(108,92,231,0.3);
+  box-shadow: 0 12px 40px rgba(108, 92, 231, 0.3);
 }
 
 .site-card-parks:hover {
-  box-shadow: 0 12px 40px rgba(34,139,34,0.3);
+  box-shadow: 0 12px 40px rgba(34, 139, 34, 0.3);
 }
 
 .site-card-housing:hover {
-  box-shadow: 0 12px 40px rgba(205,133,63,0.3);
+  box-shadow: 0 12px 40px rgba(205, 133, 63, 0.3);
 }
 
 .site-card-farms:hover {
-  box-shadow: 0 12px 40px rgba(143,188,143,0.3);
+  box-shadow: 0 12px 40px rgba(143, 188, 143, 0.3);
 }
 
 .site-card-dams:hover {
-  box-shadow: 0 12px 40px rgba(70,130,180,0.3);
+  box-shadow: 0 12px 40px rgba(70, 130, 180, 0.3);
 }
 
 .site-card-cafes:hover {
-  box-shadow: 0 12px 40px rgba(139,69,19,0.3);
+  box-shadow: 0 12px 40px rgba(139, 69, 19, 0.3);
 }
 
 /* Image Section */
@@ -261,38 +269,62 @@
 }
 
 .image-placeholder-viewpoints {
-  background: linear-gradient(135deg, rgba(108,92,231,0.2) 0%, rgba(147,112,219,0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(108, 92, 231, 0.2) 0%,
+    rgba(147, 112, 219, 0.2) 100%
+  );
 }
 
 .image-placeholder-parks {
-  background: linear-gradient(135deg, rgba(34,139,34,0.2) 0%, rgba(50,205,50,0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(34, 139, 34, 0.2) 0%,
+    rgba(50, 205, 50, 0.2) 100%
+  );
 }
 
 .image-placeholder-housing {
-  background: linear-gradient(135deg, rgba(205,133,63,0.2) 0%, rgba(222,184,135,0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(205, 133, 63, 0.2) 0%,
+    rgba(222, 184, 135, 0.2) 100%
+  );
 }
 
 .image-placeholder-farms {
-  background: linear-gradient(135deg, rgba(143,188,143,0.2) 0%, rgba(154,205,50,0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(143, 188, 143, 0.2) 0%,
+    rgba(154, 205, 50, 0.2) 100%
+  );
 }
 
 .image-placeholder-dams {
-  background: linear-gradient(135deg, rgba(70,130,180,0.2) 0%, rgba(135,206,235,0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(70, 130, 180, 0.2) 0%,
+    rgba(135, 206, 235, 0.2) 100%
+  );
 }
 
 .image-placeholder-cafes {
-  background: linear-gradient(135deg, rgba(139,69,19,0.2) 0%, rgba(205,133,63,0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(139, 69, 19, 0.2) 0%,
+    rgba(205, 133, 63, 0.2) 100%
+  );
 }
 
 .placeholder-icon {
   font-size: 48px;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255, 255, 255, 0.3);
   margin-bottom: 8px;
 }
 
 .placeholder-text {
-  color: rgba(255,255,255,0.5);
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
 }
 
 /* Image Navigation */
@@ -300,7 +332,7 @@
   position: absolute;
   top: 50%;
   color: #fff;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   transform: translateY(-50%);
   border: none;
   border-radius: 50%;
@@ -313,7 +345,7 @@
 }
 
 .image-nav-button:hover {
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .image-nav-prev {
@@ -345,7 +377,7 @@
 }
 
 .image-dot-inactive {
-  background-color: rgba(255,255,255,0.5);
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
 /* Weather Overlay */
@@ -353,7 +385,7 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(8px);
   border-radius: 8px;
   padding: 8px;
@@ -363,11 +395,11 @@
 }
 
 .weather-overlay-viewpoints {
-  background: rgba(108,92,231,0.7);
+  background: rgba(108, 92, 231, 0.7);
 }
 
 .weather-overlay-parks {
-  background: rgba(34,139,34,0.7);
+  background: rgba(34, 139, 34, 0.7);
 }
 
 .weather-icon {
@@ -400,7 +432,7 @@
 }
 
 .card-title {
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
   font-weight: bold;
   color: #fff;
   text-align: right;
@@ -409,39 +441,39 @@
 }
 
 .card-address {
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
-  color: rgba(255,255,255,0.6);
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 0.9rem;
   text-align: right;
 }
 
 .card-icon {
   margin-left: 8px;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .card-icon-viewpoints {
-  color: rgba(108,92,231,0.7);
+  color: rgba(108, 92, 231, 0.7);
 }
 
 .card-icon-parks {
-  color: rgba(34,139,34,0.7);
+  color: rgba(34, 139, 34, 0.7);
 }
 
 .card-icon-housing {
-  color: rgba(205,133,63,0.7);
+  color: rgba(205, 133, 63, 0.7);
 }
 
 .card-icon-farms {
-  color: rgba(143,188,143,0.7);
+  color: rgba(143, 188, 143, 0.7);
 }
 
 .card-icon-dams {
-  color: rgba(70,130,180,0.7);
+  color: rgba(70, 130, 180, 0.7);
 }
 
 .card-icon-cafes {
-  color: rgba(139,69,19,0.7);
+  color: rgba(139, 69, 19, 0.7);
 }
 
 /* Rating and Stats */
@@ -464,8 +496,8 @@
 }
 
 .rating-text {
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
-  color: rgba(255,255,255,0.75);
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
+  color: rgba(255, 255, 255, 0.75);
   font-size: 12px;
 }
 
@@ -483,17 +515,17 @@
 
 .stat-icon {
   font-size: 16px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .stat-number {
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.8rem;
 }
 
 /* Divider */
 .divider {
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   height: 1px;
   border: none;
 }
@@ -504,8 +536,8 @@
 }
 
 .description-text {
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
-  color: rgba(255,255,255,0.75);
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
+  color: rgba(255, 255, 255, 0.75);
   font-size: 0.9rem;
   line-height: 1.6;
   display: -webkit-box;
@@ -524,46 +556,46 @@
 
 .feature-chip {
   font-size: 0.7rem;
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
   padding: 4px 8px;
   border-radius: 12px;
 }
 
 .feature-chip-viewpoints {
-  background: rgba(108,92,231,0.2);
+  background: rgba(108, 92, 231, 0.2);
   color: #a29bfe;
 }
 
 .feature-chip-parks {
-  background: rgba(34,139,34,0.2);
-  color: #32CD32;
+  background: rgba(34, 139, 34, 0.2);
+  color: #32cd32;
 }
 
 .feature-chip-housing {
-  background: rgba(205,133,63,0.2);
-  color: #DEB887;
+  background: rgba(205, 133, 63, 0.2);
+  color: #deb887;
 }
 
 .feature-chip-farms {
-  background: rgba(143,188,143,0.2);
-  color: #9ACD32;
+  background: rgba(143, 188, 143, 0.2);
+  color: #9acd32;
 }
 
 .feature-chip-dams {
-  background: rgba(70,130,180,0.2);
-  color: #87CEEB;
+  background: rgba(70, 130, 180, 0.2);
+  color: #87ceeb;
 }
 
 .feature-chip-cafes {
-  background: rgba(139,69,19,0.2);
-  color: #CD853F;
+  background: rgba(139, 69, 19, 0.2);
+  color: #cd853f;
 }
 
 .feature-chip-more {
-  background: rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.6);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 0.7rem;
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
 }
 
 /* Additional Info */
@@ -582,13 +614,13 @@
 
 .info-icon {
   font-size: 14px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .info-text {
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.8rem;
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
 }
 
 /* Action Buttons */
@@ -601,7 +633,7 @@
 .action-button-primary {
   width: 100%;
   color: #fff;
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
   font-weight: bold;
   border-radius: 8px;
   padding: 12px 24px;
@@ -616,66 +648,66 @@
 
 .action-button-viewpoints {
   background: linear-gradient(135deg, #6c5ce7 0%, #4a3fcf 100%);
-  box-shadow: 0 4px 20px rgba(108,92,231,0.3);
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
 }
 
 .action-button-viewpoints:hover {
   background: linear-gradient(135deg, #5a4cd1 0%, #3a30b8 100%);
-  box-shadow: 0 8px 25px rgba(108,92,231,0.5);
+  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5);
 }
 
 .action-button-parks {
-  background: linear-gradient(135deg, #228B22 0%, #32CD32 100%);
-  box-shadow: 0 4px 20px rgba(34,139,34,0.3);
+  background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);
+  box-shadow: 0 4px 20px rgba(34, 139, 34, 0.3);
 }
 
 .action-button-parks:hover {
   background: linear-gradient(135deg, #1e7d1e 0%, #28a428 100%);
-  box-shadow: 0 8px 25px rgba(34,139,34,0.5);
+  box-shadow: 0 8px 25px rgba(34, 139, 34, 0.5);
 }
 
 .action-button-housing {
-  background: linear-gradient(135deg, #CD853F 0%, #DEB887 100%);
-  box-shadow: 0 4px 20px rgba(205,133,63,0.3);
+  background: linear-gradient(135deg, #cd853f 0%, #deb887 100%);
+  box-shadow: 0 4px 20px rgba(205, 133, 63, 0.3);
 }
 
 .action-button-housing:hover {
   background: linear-gradient(135deg, #b8763a 0%, #c8a882 100%);
-  box-shadow: 0 8px 25px rgba(205,133,63,0.5);
+  box-shadow: 0 8px 25px rgba(205, 133, 63, 0.5);
 }
 
 .action-button-farms {
-  background: linear-gradient(135deg, #8FBC8F 0%, #9ACD32 100%);
-  box-shadow: 0 4px 20px rgba(143,188,143,0.3);
+  background: linear-gradient(135deg, #8fbc8f 0%, #9acd32 100%);
+  box-shadow: 0 4px 20px rgba(143, 188, 143, 0.3);
 }
 
 .action-button-farms:hover {
   background: linear-gradient(135deg, #7a9f7a 0%, #8ab82a 100%);
-  box-shadow: 0 8px 25px rgba(143,188,143,0.5);
+  box-shadow: 0 8px 25px rgba(143, 188, 143, 0.5);
 }
 
 .action-button-dams {
-  background: linear-gradient(135deg, #4682B4 0%, #87CEEB 100%);
-  box-shadow: 0 4px 20px rgba(70,130,180,0.3);
+  background: linear-gradient(135deg, #4682b4 0%, #87ceeb 100%);
+  box-shadow: 0 4px 20px rgba(70, 130, 180, 0.3);
 }
 
 .action-button-dams:hover {
-  background: linear-gradient(135deg, #36648B 0%, #68B3D6 100%);
-  box-shadow: 0 8px 25px rgba(70,130,180,0.5);
+  background: linear-gradient(135deg, #36648b 0%, #68b3d6 100%);
+  box-shadow: 0 8px 25px rgba(70, 130, 180, 0.5);
 }
 
 .action-button-cafes {
-  background: linear-gradient(135deg, #8B4513 0%, #CD853F 100%);
-  box-shadow: 0 4px 20px rgba(139,69,19,0.3);
+  background: linear-gradient(135deg, #8b4513 0%, #cd853f 100%);
+  box-shadow: 0 4px 20px rgba(139, 69, 19, 0.3);
 }
 
 .action-button-cafes:hover {
   background: linear-gradient(135deg, #7a3d10 0%, #b8763a 100%);
-  box-shadow: 0 8px 25px rgba(139,69,19,0.5);
+  box-shadow: 0 8px 25px rgba(139, 69, 19, 0.5);
 }
 
 .action-button-share {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
   border: none;
   border-radius: 50%;
@@ -688,7 +720,7 @@
 }
 
 .action-button-share:hover {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Empty State */
@@ -699,25 +731,25 @@
 
 .empty-icon {
   font-size: 80px;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255, 255, 255, 0.3);
   margin-bottom: 16px;
 }
 
 .empty-title {
   color: #fff;
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
   font-size: 2rem;
   margin-bottom: 16px;
 }
 
 .empty-subtitle {
-  color: rgba(255,255,255,0.6);
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
   margin-bottom: 32px;
 }
 
 .empty-button {
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
   font-weight: bold;
   padding: 12px 24px;
   border: none;
@@ -731,23 +763,23 @@
 }
 
 .empty-button-parks {
-  background: linear-gradient(135deg, #228B22 0%, #32CD32 100%);
+  background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);
 }
 
 .empty-button-housing {
-  background: linear-gradient(135deg, #CD853F 0%, #DEB887 100%);
+  background: linear-gradient(135deg, #cd853f 0%, #deb887 100%);
 }
 
 .empty-button-farms {
-  background: linear-gradient(135deg, #8FBC8F 0%, #9ACD32 100%);
+  background: linear-gradient(135deg, #8fbc8f 0%, #9acd32 100%);
 }
 
 .empty-button-dams {
-  background: linear-gradient(135deg, #4682B4 0%, #87CEEB 100%);
+  background: linear-gradient(135deg, #4682b4 0%, #87ceeb 100%);
 }
 
 .empty-button-cafes {
-  background: linear-gradient(135deg, #8B4513 0%, #CD853F 100%);
+  background: linear-gradient(135deg, #8b4513 0%, #cd853f 100%);
 }
 
 /* Loading Spinner Colors */
@@ -756,23 +788,23 @@
 }
 
 .loading-spinner-parks {
-  color: #228B22;
+  color: #228b22;
 }
 
 .loading-spinner-housing {
-  color: #CD853F;
+  color: #cd853f;
 }
 
 .loading-spinner-farms {
-  color: #8FBC8F;
+  color: #8fbc8f;
 }
 
 .loading-spinner-dams {
-  color: #4682B4;
+  color: #4682b4;
 }
 
 .loading-spinner-cafes {
-  color: #8B4513;
+  color: #8b4513;
 }
 
 /* Container */
@@ -800,13 +832,13 @@
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .rating-stats {
     flex-direction: column;
     align-items: flex-end;
     gap: 8px;
   }
-  
+
   .additional-info {
     flex-direction: column;
   }
@@ -1108,10 +1140,14 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 * {
-  font-family: 'RH-Zak Reg', Arial, sans-serif !important;
+  font-family: "RH-Zak Reg", Arial, sans-serif !important;
 }

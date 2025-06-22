@@ -1,30 +1,36 @@
-﻿import React from 'react';
-import { Box } from '@mui/material';
-import HeroSection from '../components/HeroSection';
-import NextSection from '../components/NextSection';
-import Footer from '../components/Footer';
+﻿import React from "react";
+import { Box } from "@mui/material";
+import HeroSection from "../components/HeroSection";
+import NextSection from "../components/NextSection";
+import Footer from "../components/Footer";
 
-import { useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
 function usePageTracking() {
   const location = useLocation();
 
   useEffect(() => {
-    window.gtag('config', 'G-S5KLTR1HNK', {
+    window.gtag("config", "G-S5KLTR1HNK", {
       page_path: location.pathname,
     });
   }, [location]);
+
+  useEffect(() => {
+    document.title = "بني حسن - الرئيسية";
+  }, []);
 }
 
 export default function HomePage() {
   usePageTracking();
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh',
-      backgroundColor: '#f5f5f5', 
-    }}>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundColor: "#f5f5f5",
+      }}
+    >
       <HeroSection />
       <NextSection />
       <Footer />
