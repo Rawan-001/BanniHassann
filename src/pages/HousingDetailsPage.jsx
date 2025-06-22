@@ -352,11 +352,62 @@ const HousingDetailsPage = () => {
               bgcolor: "transparent",
             }}
           >
+            {/* الطقس */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                flex: 1,
+                justifyContent: "flex-start",
+              }}
+            >
+              <WbSunnyIcon
+                sx={{
+                  fontSize: { xs: 24, sm: 26, md: 28, lg: 30 },
+                  color: "white",
+                  flexShrink: 0,
+                  transform: "translateY(-4px)",
+                }}
+              />
+              <Typography
+                sx={{
+                  fontSize: { xs: 28, sm: 30, md: 32, lg: 34 },
+                  fontWeight: "bold",
+                  color: "white",
+                  lineHeight: 1,
+                  display: "flex",
+                  alignItems: "baseline",
+                }}
+              >
+                {weather?.temp ? `${weather.temp}°` : "--°"}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                width: "2px",
+                height: { xs: 45, sm: 50, md: 55, lg: 70, xl: 80 },
+                bgcolor: "rgba(255,255,255,0.8)",
+                mx: 2,
+                borderRadius: 1,
+                flexShrink: 0,
+              }}
+            />
+
             {/* التقييم */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                flex: 1,
+                justifyContent: "flex-end",
+              }}
+            >
               <Star
                 sx={{
-                  fontSize: { xs: 28, sm: 30, md: 32 },
+                  fontSize: { xs: 24, sm: 26, md: 28, lg: 30 },
                   color: "#fff",
                   stroke: "white",
                   strokeWidth: 0.5,
@@ -366,27 +417,17 @@ const HousingDetailsPage = () => {
               />
               <Typography
                 sx={{
-                  fontSize: 32,
+                  fontSize: { xs: 24, sm: 26, md: 28, lg: 30 },
                   fontWeight: "bold",
                   color: "white",
                   lineHeight: 1,
+                  display: "flex",
+                  alignItems: "baseline",
                 }}
               >
-                {formatrating(housing.rating)
-                  ? formatrating(housing.rating)
-                  : "--"}
+                {formatrating(housing.rating) || "--"}
               </Typography>
             </Box>
-            <Box
-              sx={{
-                width: "2px",
-                height: { xs: 55, sm: 50, md: 55, lg: 85, xl: 95 },
-                bgcolor: "rgba(255,255,255,0.8)",
-                mx: 2,
-                borderRadius: 1,
-                flexShrink: 0,
-              }}
-            />
           </Box>
           {/* زر الوصول للموقع */}
           <Button

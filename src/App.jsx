@@ -22,11 +22,8 @@ import ParksPage from './pages/ParksPage';
 import HousingPage from './pages/HousingPage';
 import FarmsPage from './pages/FarmsPage';
 import ParkDetailsPage from './pages/ParkDetailsPage';
-import DamDetailsPage from './pages/DamDetailsPage';
 import FarmDetailsPage from './pages/FarmDetailsPage';
-import ViewpointDetailsPage from './pages/ViewpointDetailsPage';
 import HousingDetailsPage from './pages/HousingDetailsPage';
-import CafeDetailsPage from './pages/CafeDetailsPage';
 
 const theme = createTheme({
   direction: 'rtl',
@@ -239,11 +236,8 @@ export default function App() {
                 <Route path="dams" element={<DamsPage />} />
                 <Route path="parks" element={<ParksPage />} />
                 <Route path="parks/:id" element={<ParkDetailsPage />} />
-                <Route path="dams/:id" element={<DamDetailsPage />} />
                 <Route path="farms/:id" element={<FarmDetailsPage />} />
-                <Route path="viewpoints/:id" element={<ViewpointDetailsPage />} />
                 <Route path="housing/:id" element={<HousingDetailsPage />} />
-                <Route path="cafes/:id" element={<CafeDetailsPage />} />
                 <Route path="housing" element={<HousingPage />} />
                 <Route path="farms" element={<FarmsPage />} />
                 <Route path="*" element={<NotFoundPage />} />
