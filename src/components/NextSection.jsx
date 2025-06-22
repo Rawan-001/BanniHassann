@@ -305,6 +305,7 @@ export default function BaniHassan() {
                   width={40}
                   height={40}
                   className="bani-hassan-leaf-bg"
+                  style={{ opacity: 0.7 }}
                 />
                 <div className="bani-hassan-feature-content">
                   <IconComponent className="bani-hassan-icon" />

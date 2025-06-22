@@ -2565,7 +2565,7 @@ body {
 
 @media (max-width: 768px) {
   .hero-main-texts {
-    left: 50%;
+    left:40vw;
     transform: translateX(-50%);
     right: auto;
     bottom: 200px;
@@ -2590,7 +2590,7 @@ body {
     bottom: 170px;
   }
   .hero-corner-pattern {
-    left: 75vw;
+    left: 65vw;
     width: 70px;
     height: 70px;
     bottom: 170px;

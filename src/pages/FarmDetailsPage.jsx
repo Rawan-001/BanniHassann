@@ -201,17 +201,17 @@ const FarmDetailsPage = () => {
       <Box
         sx={{
           width: "90%",
-          maxWidth: 800,
+          maxWidth: { xs: 800, lg: 1000, xl: 1200 },
           mx: "auto",
           borderRadius: { xs: 3, sm: 4, md: 5 },
           overflow: "hidden",
-          mb: { xs: 1, sm: 1.5, md: 1 },
+          mb: { xs: 1, sm: 1.5, md: 2, lg: 4 },
           boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
           position: "relative",
           background: "#222",
           zIndex: 2,
-          height: { xs: 280, sm: 250, md: 220, lg: 300 },
-          mt: { xs: 2, sm: 3, md: 4 },
+          height: { xs: 280, sm: 250, md: 220, lg: 300, xl: 350 },
+          mt: { xs: 2, sm: 3, md: 4, lg: 6 },
         }}
       >
         {farm.images && farm.images.length > 0 && (
@@ -307,19 +307,19 @@ const FarmDetailsPage = () => {
         sx={{
           display: "flex",
           flexDirection: { xs: "column", md: "row-reverse" },
-          gap: { xs: 2, sm: 3, md: 4 },
+          gap: { xs: 2, sm: 3, md: 6, lg: 8 },
           alignItems: "flex-start",
           justifyContent: "center",
-          maxWidth: 950,
+          maxWidth: { xs: 950, lg: 1200, xl: 1400 },
           mx: "auto",
-          mb: { xs: 2, sm: 2.5, md: 3 },
-          px: { xs: 2, sm: 3, md: 4 },
+          mb: { xs: 2, sm: 2.5, md: 4, lg: 6 },
+          px: { xs: 2, sm: 3, md: 4, lg: 6 },
         }}
       >
         <Box
           sx={{
-            minWidth: { xs: "100%", md: 270 },
-            maxWidth: { xs: "100%", md: 320 },
+            minWidth: { xs: "100%", md: 240, lg: 260 },
+            maxWidth: { xs: "100%", md: 300, lg: 320 },
             width: "100%",
             bgcolor: "#2d8772",
             borderRadius: { xs: 2, sm: 2.5, md: 3 },
@@ -327,22 +327,22 @@ const FarmDetailsPage = () => {
             boxShadow: "0 2px 12px rgba(0,0,0,0.18)",
             mb: { xs: 2, md: 0 },
             order: { xs: 2, md: 1 },
-            mt: { xs: 2, sm: 3, md: 4 },
+            mt: { xs: 2, sm: 3, md: 4, lg: 6 },
           }}
         >
           <Box
             sx={{
               width: "94%",
-              height: 90,
+              height: { xs: 55, sm: 50, md: 55, lg: 85, xl: 95 },
               mx: "auto",
-              mt: 1,
-              mb: 1,
+              mt: { xs: 0.5, sm: 1, md: 1.5, lg: 2 },
+              mb: { xs: 0.5, sm: 1, md: 1.5, lg: 2 },
               border: "3px solid #fff",
               borderRadius: { xs: 1.5, sm: 2, md: 2.5 },
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              px: 3,
+              px: { xs: 2, sm: 2.5, md: 3, lg: 4 },
               py: 0,
               position: "relative",
               bgcolor: "transparent",
@@ -359,7 +359,7 @@ const FarmDetailsPage = () => {
             >
               <WbSunnyIcon
                 sx={{
-                  fontSize: { xs: 28, sm: 30, md: 32 },
+                  fontSize: { xs: 20, sm: 22, md: 24, lg: 26 },
                   color: "white",
                   flexShrink: 0,
                   transform: "translateY(-4px)",
@@ -367,7 +367,7 @@ const FarmDetailsPage = () => {
               />
               <Typography
                 sx={{
-                  fontSize: { xs: 32, sm: 36, md: 40 },
+                  fontSize: { xs: 24, sm: 26, md: 28, lg: 30 },
                   fontWeight: "bold",
                   color: "white",
                   lineHeight: 1,
@@ -382,7 +382,7 @@ const FarmDetailsPage = () => {
             <Box
               sx={{
                 width: "2px",
-                height: 60,
+                height: { xs: 55, sm: 50, md: 55, lg: 85, xl: 95 },
                 bgcolor: "rgba(255,255,255,0.8)",
                 mx: 2,
                 borderRadius: 1,
@@ -401,7 +401,7 @@ const FarmDetailsPage = () => {
             >
               <Star
                 sx={{
-                  fontSize: { xs: 28, sm: 30, md: 32 },
+                  fontSize: { xs: 20, sm: 22, md: 24, lg: 26 },
                   color: "#fff",
                   stroke: "white",
                   strokeWidth: 0.5,
@@ -411,7 +411,7 @@ const FarmDetailsPage = () => {
               />
               <Typography
                 sx={{
-                  fontSize: { xs: 28, sm: 32, md: 36 },
+                  fontSize: { xs: 20, sm: 22, md: 24, lg: 26 },
                   fontWeight: "bold",
                   color: "white",
                   lineHeight: 1,
@@ -430,12 +430,12 @@ const FarmDetailsPage = () => {
               bgcolor: "#da943c",
               color: "white",
               fontWeight: "bold",
-              fontSize: { xs: 14, sm: 16, md: 18 },
+              fontSize: { xs: 12, sm: 13, md: 14, lg: 16 },
               fontFamily: "Tajawal, Arial, sans-serif",
               borderRadius: 0,
-              borderBottomLeftRadius: { xs: 8, sm: 10 },
-              borderBottomRightRadius: { xs: 8, sm: 10 },
-              py: { xs: 1.2, sm: 1.4, md: 1.6 },
+              borderBottomLeftRadius: { xs: 8, sm: 10, md: 12, lg: 14 },
+              borderBottomRightRadius: { xs: 8, sm: 10, md: 12, lg: 14 },
+              py: { xs: 0.8, sm: 1, md: 1.2, lg: 1.4 },
               mt: 0,
               transition: "all 0.2s ease-in-out",
               "&:hover": {
@@ -446,20 +446,20 @@ const FarmDetailsPage = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: { xs: 1, sm: 1.2, md: 1.5 },
+              gap: { xs: 0.6, sm: 0.8, md: 1, lg: 1.2 },
             }}
             onClick={() => window.open(farm.googleMapsUrl, "_blank")}
           >
             <Place
               sx={{
                 color: "white",
-                fontSize: { xs: 20, sm: 22, md: 24 },
+                fontSize: { xs: 16, sm: 18, md: 20, lg: 22 },
                 transform: "translateY(-1px)",
               }}
             />
             <Typography
               sx={{
-                fontSize: { xs: 14, sm: 16, md: 18 },
+                fontSize: { xs: 12, sm: 13, md: 14, lg: 16 },
                 fontWeight: "bold",
                 fontFamily: "inherit",
               }}
@@ -473,7 +473,7 @@ const FarmDetailsPage = () => {
             flex: 1,
             minWidth: 0,
             order: { xs: 1, md: 2 },
-            mt: { xs: 2, sm: 3, md: 4 },
+            mt: { xs: 2, sm: 3, md: 4, lg: 6 },
           }}
         >
           <Typography
@@ -481,7 +481,7 @@ const FarmDetailsPage = () => {
             sx={{
               fontWeight: "bold",
               color: "#17998c",
-              mb: { xs: 1, sm: 1.5 },
+              mb: { xs: 1, sm: 1.5, md: 2, lg: 3 },
               textAlign: "right",
               fontFamily: "Tajawal, Arial, sans-serif",
               fontSize: {
@@ -497,26 +497,26 @@ const FarmDetailsPage = () => {
           <Typography
             sx={{
               color: "#fff",
-              fontSize: { xs: 14, sm: 16, md: 18 },
-              mb: { xs: 2, sm: 2.5, md: 3 },
+              fontSize: { xs: 14, sm: 16, md: 18, lg: 20 },
+              mb: { xs: 2, sm: 2.5, md: 4, lg: 6 },
               textAlign: "right",
               fontFamily: "Tajawal, Arial, sans-serif",
-              lineHeight: { xs: 1.6, sm: 1.7, md: 2 },
+              lineHeight: { xs: 1.6, sm: 1.7, md: 2, lg: 2.2 },
             }}
           >
             {farm.description}
           </Typography>
           {farm.details && farm.details.length > 0 && (
-            <Box sx={{ mt: { xs: 3, sm: 3.5, md: 4 } }}>
+            <Box sx={{ mt: { xs: 3, sm: 3.5, md: 5, lg: 7 } }}>
               <Typography
                 variant="h4"
                 sx={{
                   color: "#17998c",
                   fontWeight: "bold",
-                  mb: 0.5,
+                  mb: { xs: 0.5, sm: 1, md: 2, lg: 3 },
                   textAlign: "right",
                   fontFamily: "Tajawal, Arial, sans-serif",
-                  fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2.125rem" },
+                  fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2.125rem", lg: "2.5rem" },
                 }}
               >
                 المعلومات الإضافية
@@ -525,14 +525,14 @@ const FarmDetailsPage = () => {
                 sx={{
                   display: "flex",
                   flexDirection: "row-reverse",
-                  gap: { xs: 1, sm: 2, md: 2.5 },
+                  gap: { xs: 1, sm: 2, md: 3, lg: 4 },
                   flexWrap: "wrap",
                   alignItems: "flex-start",
                   justifyContent: "flex-start",
                   width: "100%",
                   direction: "rtl",
-                  mb: 2,
-                  mt: 0,
+                  mb: { xs: 2, sm: 3, md: 4, lg: 6 },
+                  mt: { xs: 0, sm: 1, md: 2, lg: 3 },
                 }}
               >
                 {farm.details.map((detail, idx) => {
@@ -611,7 +611,7 @@ const FarmDetailsPage = () => {
                           style={{
                             width: "100%",
                             height: "100%",
-                            opacity: 0.5,
+                            opacity: 0.7,
                           }}
                         />
                         <Box
@@ -631,7 +631,7 @@ const FarmDetailsPage = () => {
                       </Box>
                       <Typography
                         sx={{
-                          color: "#17998c",
+                          color: "#ffffff",
                           fontWeight: "bold",
                           fontSize: 16,
                           fontFamily: "Tajawal, Arial, sans-serif",
@@ -654,13 +654,13 @@ const FarmDetailsPage = () => {
                 sx={{
                   color: "#17998c",
                   fontWeight: "bold",
-                  mb: { xs: 1.5, sm: 2 },
+                  mb: 0.5,
                   textAlign: "right",
                   fontFamily: "Tajawal, Arial, sans-serif",
                   fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2.125rem" },
                 }}
               >
-                الأنشطة المتاحة
+                الأنشطة الترفيهية
               </Typography>
               <Box
                 sx={{
@@ -715,7 +715,7 @@ const FarmDetailsPage = () => {
                     )}
                     <Typography
                       sx={{
-                        color: "#fff",
+                        color: "#ffffff",
                         fontWeight: "bold",
                         fontSize: { xs: 12, sm: 14, md: 18 },
                         fontFamily: "Tajawal, Arial, sans-serif",
@@ -728,7 +728,7 @@ const FarmDetailsPage = () => {
                 ))}
               </Box>
             </Box>
-          )}{" "}
+          )}
         </Box>
       </Box>
     </Box>
