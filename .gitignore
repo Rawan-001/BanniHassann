@@ -1,0 +1,52 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node
+node_modules/
+build/
+dist/
+dist-ssr/
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Media files (prevent accidental upload)
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.psd
+*.zip
+*.rar
+*.7z
+*.exe
+
+# Firebase storage rules (if generated)
+firebase-debug.log
+firebase-debug.*
+.firebaserc
+# Optional: React-specific cache
+.cache/

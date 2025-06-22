@@ -1,0 +1,33 @@
+﻿import React from 'react';
+import { Box } from '@mui/material';
+import HeroSection from '../components/HeroSection';
+import NextSection from '../components/NextSection';
+import Footer from '../components/Footer';
+
+import { useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+
+function usePageTracking() {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.gtag('config', 'G-S5KLTR1HNK', {
+      page_path: location.pathname,
+    });
+  }, [location]);
+}
+
+export default function HomePage() {
+  usePageTracking();
+
+  return (
+    <Box sx={{ 
+      minHeight: '100vh',
+      backgroundColor: '#f5f5f5', 
+    }}>
+      <HeroSection />
+      <NextSection />
+      <Footer />
+    </Box>
+  );
+}

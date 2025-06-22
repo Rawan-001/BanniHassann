@@ -1,0 +1,119 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isActive == true;
+    }
+
+    function isValidImage() {
+      return request.resource.data.type.matches('image/.*');
+    }
+
+    function isValidVideo() {
+      return request.resource.data.type.matches('video/.*');
+    }
+
+    function isValidCoordinates() {
+      return request.resource.data.coordinates.lat is number &&
+        request.resource.data.coordinates.lat >= -90 &&
+        request.resource.data.coordinates.lat <= 90 &&
+        request.resource.data.coordinates.lon is number &&
+        request.resource.data.coordinates.lon >= -180 &&
+        request.resource.data.coordinates.lon <= 180;
+    }
+
+    function isValidRating() {
+      return request.resource.data.rating is number &&
+        request.resource.data.rating >= 0 &&
+        request.resource.data.rating <= 5;
+    }
+
+    function isValidCategory() {
+      return request.resource.data.category in ['cafes', 'dams', 'parks', 'housing', 'viewpoints', 'farms'];
+    }
+
+    function isValidString(field) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() > 0;
+    }
+
+    function isValidTimestamp(field) {
+      return request.resource.data[field] is timestamp;
+    }
+
+    match /tourismSites/{siteId} {
+      allow read: if true;
+
+      allow create: if isAdmin() &&
+        isValidString('title') &&
+        isValidString('description') &&
+        isValidCategory() &&
+        isValidCoordinates() &&
+        isValidRating() &&
+        request.resource.data.images is list &&
+        request.resource.data.videos is list &&
+        request.resource.data.createdAt is timestamp &&
+        request.resource.data.updatedAt is timestamp;
+
+      allow update: if isAdmin() &&
+        isValidString('title') &&
+        isValidString('description') &&
+        isValidCategory() &&
+        isValidCoordinates() &&
+        isValidRating() &&
+        request.resource.data.images is list &&
+        request.resource.data.videos is list &&
+        request.resource.data.updatedAt is timestamp;
+
+      allow delete: if isAdmin();
+    }
+
+    match /mediaFiles/{fileId} {
+      allow read: if true;
+
+      allow create: if isAdmin() &&
+        isValidString('originalName') &&
+        request.resource.data.uploadedAt is timestamp;
+
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    match /admins/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && request.auth.uid == userId && !exists(/databases/$(database)/documents/admins/$(userId));
+    }
+
+    match /systemAdmins/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /adminInvitations/{invitationId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /analytics/{document} {
+      allow read: if isAdmin();
+      allow write: if isAuthenticated();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
