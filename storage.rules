@@ -1,0 +1,55 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules
+service firebase.storage {
+  match /b/{bucket}/o {
+    // قواعد عامة للملفات
+    match /{allPaths=**} {
+      // السماح بالقراءة للجميع
+      allow read: if true;
+      
+      // السماح بالكتابة للمستخدمين المصادق عليهم فقط
+      allow write: if request.auth != null;
+    }
+    
+    // قواعد خاصة للمواقع السياحية
+    match /tourismSites/{allPaths=**} {
+      // السماح بالقراءة للجميع
+      allow read: if true;
+      
+      // السماح بالكتابة للمستخدمين المصادق عليهم
+      allow write: if request.auth != null 
+                   && request.auth.token.email_verified == true;
+    }
+    
+    // قواعد خاصة بملفات الاختبار
+    match /test/{allPaths=**} {
+      // السماح بالقراءة والكتابة للمستخدمين المصادق عليهم
+      allow read, write: if request.auth != null;
+    }
+    
+    // قواعد خاصة بالصور
+    match /tourismSites/images/{imageId} {
+      // السماح بالقراءة للجميع
+      allow read: if true;
+      
+      // السماح بالكتابة للمستخدمين المصادق عليهم مع قيود الحجم
+      allow write: if request.auth != null 
+                   && request.auth.token.email_verified == true
+                   && resource.size < 10 * 1024 * 1024  // 10MB
+                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // قواعد خاصة بالفيديوهات
+    match /tourismSites/videos/{videoId} {
+      // السماح بالقراءة للجميع
+      allow read: if true;
+      
+      // السماح بالكتابة للمستخدمين المصادق عليهم مع قيود الحجم
+      allow write: if request.auth != null 
+                   && request.auth.token.email_verified == true
+                   && resource.size < 50 * 1024 * 1024  // 50MB
+                   && request.resource.contentType.matches('video/.*');
+    }
+  }
+} 
