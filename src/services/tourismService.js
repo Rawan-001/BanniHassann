@@ -354,16 +354,42 @@ export const updateTourismSite = async (siteId, siteData, newImageFiles = [], ne
     let currentImages = currentData.images || [];
     let currentVideos = currentData.videos || [];
     let currentDetails = currentData.details || [];
+    
+    console.log('Current site data:', currentData);
+    console.log('Site data images in update:', siteData.images);
+    
+    // تحديث الصور الحالية بالصور المرسلة من النموذج (إذا كانت موجودة)
+    if (siteData.images) {
+      currentImages = siteData.images;
+    }
 
     if (removeImageIds.length > 0) {
+      console.log('Removing images with IDs:', removeImageIds);
+      console.log('Current images before removal:', currentImages);
+      
       for (const imageId of removeImageIds) {
         try {
+          // البحث عن الصورة في البيانات الحالية للحصول على storagePath
+          const imageToDelete = currentImages.find(img => img.id === imageId);
+          console.log(`Processing image ${imageId}:`, imageToDelete);
+          
+          // حذف الصورة من Firebase Storage إذا كانت لها storagePath
+          if (imageToDelete && imageToDelete.storagePath) {
+            console.log(`Deleting from Firebase Storage: ${imageToDelete.storagePath}`);
+            await deleteFileFromFirebaseStorage(imageToDelete.storagePath);
+          }
+          
+          // حذف الصورة من mediaFiles collection
+          console.log(`Deleting from mediaFiles collection: ${imageId}`);
           await deleteDoc(doc(db, 'mediaFiles', imageId));
+          
+          console.log(`Successfully deleted image: ${imageId}`);
         } catch (error) {
           console.warn(`فشل حذف الصورة ${imageId}:`, error.message);
         }
       }
       currentImages = currentImages.filter(img => !removeImageIds.includes(img.id));
+      console.log('Current images after removal:', currentImages);
     }
 
     if (removeVideoIds.length > 0) {
@@ -465,6 +491,8 @@ export const updateTourismSite = async (siteId, siteData, newImageFiles = [], ne
       
       updatedAt: serverTimestamp()
     };
+    
+    console.log('Final updated data:', updatedData);
 
     await updateDoc(siteDocRef, updatedData);
 

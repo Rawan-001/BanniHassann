@@ -180,7 +180,6 @@ export default function BaniHassan() {
   const isCardInView = useInView(cardRef, { once: true, threshold: 0.3 });
   const isDescriptionInView = useInView(descriptionRef, { once: true, threshold: 0.3 });
 
-  // إضافة حركة الطفو مباشرة على الكارد
   useEffect(() => {
     console.log('useEffect triggered:', { isCardInView, cardRef: cardRef.current });
     
@@ -195,19 +194,15 @@ export default function BaniHassan() {
         if (!startTime) startTime = timestamp;
         const elapsed = timestamp - startTime;
         
-        // حساب موضع Y باستخدام sine wave للحركة الناعمة والخفيفة
-        const progressY = (elapsed % 4000) / 4000; // 4 ثواني للدورة الواحدة
-        const yOffset = Math.sin(progressY * Math.PI * 2) * -8; // حركة خفيفة من 0 إلى -8px
+        const progressY = (elapsed % 4000) / 4000; 
+        const yOffset = Math.sin(progressY * Math.PI * 2) * -8; 
         
-        // حساب الدوران الخفيف مع توقيت مختلف لتبدو طبيعية أكثر
-        const progressRotate = (elapsed % 6000) / 6000; // 6 ثواني للدوران (أبطأ من الحركة العمودية)
-        const rotateAngle = Math.sin(progressRotate * Math.PI * 2) * 3; // دوران خفيف ±3 درجات
+        const progressRotate = (elapsed % 6000) / 6000; 
+        const rotateAngle = Math.sin(progressRotate * Math.PI * 2) * 3; 
         
-        // حساب حركة أفقية خفيفة جداً للمزيد من الواقعية
-        const progressX = (elapsed % 5000) / 5000; // 5 ثواني للحركة الأفقية
-        const xOffset = Math.sin(progressX * Math.PI * 2) * 2; // حركة أفقية خفيفة جداً ±2px
+        const progressX = (elapsed % 5000) / 5000; 
+        const xOffset = Math.sin(progressX * Math.PI * 2) * 2; 
         
-        // تطبيق جميع الحركات معاً لتبدو وكأنها تطفو حقيقياً
         const transform = `translateY(${yOffset}px) translateX(${xOffset}px) rotate(${rotateAngle}deg)`;
         cardElement.style.setProperty('transform', transform, 'important');
         cardElement.style.setProperty('transition', 'none', 'important');
@@ -215,21 +210,18 @@ export default function BaniHassan() {
         animationId = requestAnimationFrame(animate);
       };
       
-      // إضافة حماية من تأثير hover
       const preventHoverEffects = () => {
         cardElement.style.setProperty('pointer-events', 'none', 'important');
         cardElement.style.setProperty('user-select', 'none', 'important');
         cardElement.style.setProperty('transform-origin', 'center center', 'important');
       };
       
-      // بدء الحركة بعد تأخير قصير
       setTimeout(() => {
         console.log('Starting realistic floating animation...');
         preventHoverEffects();
         animationId = requestAnimationFrame(animate);
       }, 500);
       
-      // تنظيف الحركة عند إلغاء المكون
       return () => {
         if (animationId) {
           cancelAnimationFrame(animationId);

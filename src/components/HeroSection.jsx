@@ -76,6 +76,60 @@ export default function HeroSection() {
     loadVideoFromStorage();
   }, []);
 
+  // useEffect لضمان تشغيل الفيديو بدون أزرار تحكم في iOS
+  useEffect(() => {
+    if (videoRef.current && videoUrl) {
+      const video = videoRef.current;
+      
+      // إزالة جميع أزرار التحكم
+      video.removeAttribute('controls');
+      video.controls = false;
+      
+      // إعدادات خاصة بـ iOS
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.setAttribute('x-webkit-airplay', 'deny');
+      
+      // منع السياق menu
+      video.oncontextmenu = () => false;
+      video.onselectstart = () => false;
+      video.ondragstart = () => false;
+      
+      // تشغيل تلقائي مع معالجة الأخطاء
+      const playVideo = async () => {
+        try {
+          await video.play();
+          console.log('Video started playing successfully');
+        } catch (error) {
+          console.warn('Autoplay failed, trying again:', error);
+          // محاولة أخرى بعد تأخير قصير
+          setTimeout(() => {
+            video.play().catch(e => console.error('Second play attempt failed:', e));
+          }, 1000);
+        }
+      };
+      
+      if (video.paused) {
+        playVideo();
+      }
+      
+      // معالج للتأكد من استمرار التشغيل
+      const handleCanPlay = () => {
+        if (video.paused) {
+          playVideo();
+        }
+      };
+      
+      video.addEventListener('canplay', handleCanPlay);
+      video.addEventListener('loadeddata', handleCanPlay);
+      
+      return () => {
+        video.removeEventListener('canplay', handleCanPlay);
+        video.removeEventListener('loadeddata', handleCanPlay);
+      };
+    }
+  }, [videoUrl]);
+
   const scrollToNextSection = () => {
     const nextSection = document.getElementById('bani-hassan-section');
     if (nextSection) {
@@ -246,14 +300,38 @@ export default function HeroSection() {
             ref={videoRef}
             autoPlay
             muted
+            volume={0}
             loop
             playsInline
+            webkit-playsinline="true"
             controls={false}
+            controlsList="nodownload nofullscreen noremoteplayback"
+            disablePictureInPicture
+            disableRemotePlayback
             preload="auto"
+            poster=""
             className="hero-background-video"
+            x-webkit-airplay="deny"
             onError={(e) => {
               console.error('Video error:', e);
               setVideoError('خطأ في تشغيل الفيديو');
+            }}
+            onLoadedData={() => {
+              // Force play on load to ensure autoplay works on iOS
+              if (videoRef.current) {
+                const video = videoRef.current;
+                video.volume = 0;
+                video.muted = true;
+                video.play().catch(console.error);
+              }
+            }}
+            onLoadedMetadata={() => {
+              // Additional check for iOS
+              if (videoRef.current) {
+                const video = videoRef.current;
+                video.volume = 0;
+                video.muted = true;
+              }
             }}
             style={{
               objectFit: 'cover',

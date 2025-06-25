@@ -1153,6 +1153,125 @@ body {
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   backface-visibility: hidden;
+  
+  /* إخفاء أزرار التحكم تماماً */
+  pointer-events: none !important;
+  
+  /* إخفاء أزرار التحكم في WebKit/Safari */
+  -webkit-media-controls: none !important;
+  -webkit-media-controls-panel: none !important;
+  -webkit-media-controls-play-button: none !important;
+  -webkit-media-controls-start-playback-button: none !important;
+  -webkit-appearance: none !important;
+  
+  /* إخفاء أزرار التحكم في Firefox */
+  -moz-appearance: none !important;
+  
+  /* إخفاء أزرار التحكم العامة */
+  appearance: none !important;
+}
+
+/* إخفاء أي أزرار تحكم قد تظهر */
+.hero-background-video::-webkit-media-controls {
+  display: none !important;
+  -webkit-appearance: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-panel {
+  display: none !important;
+  -webkit-appearance: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-play-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-timeline {
+  display: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-current-time-display {
+  display: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-time-remaining-display {
+  display: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-seek-back-button {
+  display: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-seek-forward-button {
+  display: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-fullscreen-button {
+  display: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-rewind-button {
+  display: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-return-to-realtime-button {
+  display: none !important;
+}
+
+.hero-background-video::-webkit-media-controls-toggle-closed-captions-button {
+  display: none !important;
+}
+
+/* إخفاء أزرار التحكم في أجهزة iOS والموبايل */
+@supports (-webkit-touch-callout: none) {
+  .hero-background-video {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+}
+
+/* للتأكد من عدم ظهور أي أزرار في الموبايل */
+@media screen and (max-width: 768px) {
+  .hero-background-video {
+    -webkit-media-controls: none !important;
+    -webkit-media-controls-panel: none !important;
+    -webkit-media-controls-play-button: none !important;
+    -webkit-media-controls-start-playback-button: none !important;
+    
+    /* منع التفاعل */
+    pointer-events: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    user-select: none !important;
+    
+    /* إخفاء أي overlay */
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+  
+  .hero-background-video::-webkit-media-controls,
+  .hero-background-video::-webkit-media-controls-panel,
+  .hero-background-video::-webkit-media-controls-play-button,
+  .hero-background-video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
 }
 
 

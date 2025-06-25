@@ -293,6 +293,8 @@ export default function AdminPanel() {
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   const [isAddingSite, setIsAddingSite] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [removedImages, setRemovedImages] = useState([]);
+  const [removedVideos, setRemovedVideos] = useState([]);
 
   useEffect(() => {
     fetchSites();
@@ -389,6 +391,9 @@ export default function AdminPanel() {
   };
 
   const handleOpenForm = (site = null) => {
+    setRemovedImages([]);
+    setRemovedVideos([]);
+    
     if (site) {
       setFormData({
         ...site,
@@ -427,6 +432,8 @@ export default function AdminPanel() {
     setFormOpen(false);
     setEditMode(false);
     setSelectedSite(null);
+    setRemovedImages([]);
+    setRemovedVideos([]);
   };
 
   const handleFormChange = (field, value) => {
@@ -441,6 +448,19 @@ export default function AdminPanel() {
   const handleRemoveImage = (idx) => {
     setFormData((prev) => {
       const newImages = [...prev.images];
+      const removedImage = newImages[idx];
+      
+      console.log('Removing image at index:', idx, 'Image data:', removedImage);
+      
+      if (removedImage && removedImage.id && editMode) {
+        console.log('Adding image to removal list:', removedImage.id);
+        setRemovedImages(prevRemoved => {
+          const newRemoved = [...prevRemoved, removedImage.id];
+          console.log('Updated removed images list:', newRemoved);
+          return newRemoved;
+        });
+      }
+      
       newImages.splice(idx, 1);
       return { ...prev, images: newImages };
     });
@@ -458,32 +478,46 @@ export default function AdminPanel() {
     }
     setIsAddingSite(true);
     try {
-      const imageFiles = formData.images || [];
+      const newImageFiles = (formData.images || []).filter(img => img instanceof File);
+      const existingImages = (formData.images || []).filter(img => !(img instanceof File));
+      
+      console.log('New image files:', newImageFiles);
+      console.log('Existing images:', existingImages);
+      
       const details = (formData.details || []).map((detail) => ({
         ...detail,
         images: detail.images || [],
       }));
       const siteData = {
         ...formData,
-        images: undefined,
+        images: existingImages, 
         videos: undefined,
         details: details,
       };
       if (editMode && selectedSite) {
+        console.log('Updating site with removed images:', removedImages);
+        console.log('Current form images:', formData.images);
+        
         const result = await updateTourismSite(
           selectedSite.id,
           siteData,
-          imageFiles
+          newImageFiles,
+          [], 
+          removedImages, 
+          removedVideos 
         );
         setSnackbar({
           open: true,
           message: result.message || "تم التحديث بنجاح",
           type: "success",
         });
+        
+        setRemovedImages([]);
+        setRemovedVideos([]);
       } else {
         const result = await addTourismSite(
           { ...siteData, category: selectedCategory },
-          imageFiles
+          newImageFiles
         );
         setSnackbar({
           open: true,
