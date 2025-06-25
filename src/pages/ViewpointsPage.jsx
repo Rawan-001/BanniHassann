@@ -33,6 +33,58 @@ const ViewpointsPage = () => {
     document.title = "بني حسن - المطلات";
   }, []);
 
+  const fetchWeatherData = async (viewpoint) => {
+    if (weatherLoading || weather[viewpoint.title]) return;
+    
+    try {
+      setWeatherLoading(true);
+      let weatherData = null;
+      
+      if (viewpoint.coordinates?.lat && viewpoint.coordinates?.lon) {
+        const coordResponse = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?lat=${viewpoint.coordinates.lat}&lon=${viewpoint.coordinates.lon}&appid=${API_KEY}&units=metric&lang=ar`
+        );
+        if (coordResponse.ok) {
+          weatherData = await coordResponse.json();
+        }
+      }
+      
+      if (!weatherData && viewpoint.address) {
+        const addressQuery = `${viewpoint.address}, Al Baha, Saudi Arabia`;
+        const addressResponse = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(addressQuery)}&appid=${API_KEY}&units=metric&lang=ar`
+        );
+        if (addressResponse.ok) {
+          weatherData = await addressResponse.json();
+        }
+      }
+      
+      if (!weatherData) {
+        const defaultResponse = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=Al Baha,SA&appid=${API_KEY}&units=metric&lang=ar`
+        );
+        if (defaultResponse.ok) {
+          weatherData = await defaultResponse.json();
+        }
+      }
+      
+      if (weatherData) {
+        setWeather(prev => ({
+          ...prev,
+          [viewpoint.title]: {
+            temp: Math.round(weatherData.main.temp),
+            description: weatherData.weather[0].description,
+            icon: weatherData.weather[0].icon
+          }
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching weather:", error);
+    } finally {
+      setWeatherLoading(false);
+    }
+  };
+
   const handlePrev = (siteId, totalImages) => {
     setCurrentImageIndex((prev) => ({
       ...prev,
@@ -123,6 +175,7 @@ const ViewpointsPage = () => {
               category: viewpoint.category,
               isActive: viewpoint.isActive
             });
+            fetchWeatherData(viewpoint);
           });
           setViewpointsData(sites);
           setError(null);

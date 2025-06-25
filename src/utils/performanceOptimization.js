@@ -1,4 +1,3 @@
-
 export const optimizeDataLoading = {
   batchLoad: async (loadFunctions, batchSize = 3) => {
     const results = [];
@@ -123,7 +122,7 @@ export const optimizeImageLoading = {
   },
   
   optimizeImageDisplay: (imageUrl, options = {}) => {
-    const { width = 800, height = 600, quality = 0.8 } = options;
+    const { width = 800, height = 600, quality = 0.95 } = options;
     
     if (imageUrl && imageUrl.includes('firebasestorage.googleapis.com')) {
       const url = new URL(imageUrl);

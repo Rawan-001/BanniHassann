@@ -134,9 +134,11 @@ const ViewpointDetailsPage = () => {
     if (!img) return "";
     if (typeof img === "string") return img;
     if (img.url) return img.url;
-    if (img.base64) return img.base64;
     return "";
   };
+
+  // عرض فقط الصور التي تحتوي على url (رابط Firebase)
+  const validImages = Array.isArray(viewpoint?.images) ? viewpoint.images.filter(img => (typeof img === 'string') || (img && img.url)) : [];
 
   if (loading)
     return <FastLoadingSpinner />;
@@ -230,10 +232,10 @@ const ViewpointDetailsPage = () => {
           mt: { xs: 2, sm: 3, md: 4, lg: 6 },
         }}
       >
-        {viewpoint.images && viewpoint.images.length > 0 && (
+        {validImages && validImages.length > 0 && (
           <>
             <img
-              src={getImageUrl(viewpoint.images[currentImage])}
+              src={getImageUrl(validImages[currentImage])}
               alt={viewpoint.title}
               style={{
                 width: "100%",
@@ -243,19 +245,16 @@ const ViewpointDetailsPage = () => {
                 transition: "opacity 0.3s",
               }}
             />
-            {viewpoint.images.length > 1 && (
+            {validImages.length > 1 && (
               <>
                 <IconButton
                   onClick={() =>
-                    setCurrentImage(
-                      (currentImage - 1 + viewpoint.images.length) %
-                        viewpoint.images.length
-                    )
+                    setCurrentImage((currentImage + 1) % validImages.length)
                   }
                   sx={{
                     position: "absolute",
-                    top: "50%",
                     left: { xs: 5, sm: 10 },
+                    top: "50%",
                     transform: "translateY(-50%)",
                     bgcolor: "rgba(0,0,0,0.4)",
                     color: "#fff",
@@ -264,20 +263,16 @@ const ViewpointDetailsPage = () => {
                     height: { xs: 32, sm: 40, md: 48 },
                   }}
                 >
-                  <ArrowBackIcon
-                    sx={{ fontSize: { xs: 16, sm: 20, md: 24 } }}
-                  />
+                  <ArrowBackIcon sx={{ fontSize: { xs: 16, sm: 20, md: 24 } }} />
                 </IconButton>
                 <IconButton
                   onClick={() =>
-                    setCurrentImage(
-                      (currentImage + 1) % viewpoint.images.length
-                    )
+                    setCurrentImage((currentImage - 1 + validImages.length) % validImages.length)
                   }
                   sx={{
                     position: "absolute",
-                    top: "50%",
                     right: { xs: 5, sm: 10 },
+                    top: "50%",
                     transform: "translateY(-50%)",
                     bgcolor: "rgba(0,0,0,0.4)",
                     color: "#fff",
@@ -286,9 +281,7 @@ const ViewpointDetailsPage = () => {
                     height: { xs: 32, sm: 40, md: 48 },
                   }}
                 >
-                  <ArrowForwardIcon
-                    sx={{ fontSize: { xs: 16, sm: 20, md: 24 } }}
-                  />
+                  <ArrowForwardIcon sx={{ fontSize: { xs: 16, sm: 20, md: 24 } }} />
                 </IconButton>
 
                 <Box
@@ -301,7 +294,7 @@ const ViewpointDetailsPage = () => {
                     gap: { xs: 0.5, sm: 0.75, md: 1 },
                   }}
                 >
-                  {viewpoint.images.map((_, idx) => (
+                  {validImages.map((_, idx) => (
                     <Box
                       key={idx}
                       sx={{

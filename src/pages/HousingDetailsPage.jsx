@@ -141,9 +141,11 @@ const HousingDetailsPage = () => {
     if (!img) return "";
     if (typeof img === "string") return img;
     if (img.url) return img.url;
-    if (img.base64) return img.base64;
     return "";
   };
+
+  // عرض فقط الصور التي تحتوي على url (رابط Firebase)
+  const validImages = Array.isArray(housing?.images) ? housing.images.filter(img => (typeof img === 'string') || (img && img.url)) : [];
 
   if (loading)
     return <FastLoadingSpinner />;
@@ -240,10 +242,10 @@ const HousingDetailsPage = () => {
           mt: { xs: 2, sm: 3, md: 4, lg: 6 },
         }}
       >
-        {housing.images && housing.images.length > 0 && (
+        {validImages && validImages.length > 0 && (
           <>
             <img
-              src={getImageUrl(housing.images[currentImage])}
+              src={getImageUrl(validImages[currentImage])}
               alt={housing.title}
               style={{
                 width: "100%",
@@ -257,15 +259,12 @@ const HousingDetailsPage = () => {
               <>
                 <IconButton
                   onClick={() =>
-                    setCurrentImage(
-                      (currentImage - 1 + housing.images.length) %
-                        housing.images.length
-                    )
+                    setCurrentImage((currentImage + 1) % validImages.length)
                   }
                   sx={{
                     position: "absolute",
-                    top: "50%",
                     left: { xs: 5, sm: 10 },
+                    top: "50%",
                     transform: "translateY(-50%)",
                     bgcolor: "rgba(0,0,0,0.4)",
                     color: "#fff",
@@ -274,18 +273,16 @@ const HousingDetailsPage = () => {
                     height: { xs: 32, sm: 40, md: 48 },
                   }}
                 >
-                  <ArrowBackIcon
-                    sx={{ fontSize: { xs: 16, sm: 20, md: 24 } }}
-                  />
+                  <ArrowBackIcon sx={{ fontSize: { xs: 16, sm: 20, md: 24 } }} />
                 </IconButton>
                 <IconButton
                   onClick={() =>
-                    setCurrentImage((currentImage + 1) % housing.images.length)
+                    setCurrentImage((currentImage - 1 + validImages.length) % validImages.length)
                   }
                   sx={{
                     position: "absolute",
-                    top: "50%",
                     right: { xs: 5, sm: 10 },
+                    top: "50%",
                     transform: "translateY(-50%)",
                     bgcolor: "rgba(0,0,0,0.4)",
                     color: "#fff",
@@ -294,9 +291,7 @@ const HousingDetailsPage = () => {
                     height: { xs: 32, sm: 40, md: 48 },
                   }}
                 >
-                  <ArrowForwardIcon
-                    sx={{ fontSize: { xs: 16, sm: 20, md: 24 } }}
-                  />
+                  <ArrowForwardIcon sx={{ fontSize: { xs: 16, sm: 20, md: 24 } }} />
                 </IconButton>
                 
                 <Box

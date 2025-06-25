@@ -681,7 +681,7 @@ const ParksPage = () => {
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              handlePrev(park.id, park.images.length);
+                              handleNext(park.id, park.images.length);
                             }}
                             sx={{
                               position: "absolute",
@@ -706,7 +706,7 @@ const ParksPage = () => {
                           <IconButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleNext(park.id, park.images.length);
+                              handlePrev(park.id, park.images.length);
                             }}
                             sx={{
                               position: "absolute",

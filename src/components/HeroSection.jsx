@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Box, Typography, IconButton, Container } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import './components.css';
@@ -23,6 +23,7 @@ export default function HeroSection() {
   const [videoUrl, setVideoUrl] = useState('');
   const [videoError, setVideoError] = useState(null);
   const [isFallback, setIsFallback] = useState(false);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 500);
@@ -242,15 +243,23 @@ export default function HeroSection() {
       <Box className={`hero-video-box${videoError ? ' hero-video-error' : ''}`}>
         {videoUrl ? (
           <video
+            ref={videoRef}
             autoPlay
             muted
             loop
             playsInline
+            controls={false}
             preload="auto"
             className="hero-background-video"
             onError={(e) => {
               console.error('Video error:', e);
               setVideoError('خطأ في تشغيل الفيديو');
+            }}
+            style={{
+              objectFit: 'cover',
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none'
             }}
           >
             <source src={videoUrl} type="video/mp4" />

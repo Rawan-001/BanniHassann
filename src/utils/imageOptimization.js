@@ -5,7 +5,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
  * @param {Object} options - خيارات الضغط
  * @returns {Promise<File>} - الصورة المضغوطة
  */
-export const optimizeImage = async (file, maxWidth = 1200, maxHeight = 1200, quality = 0.8) => {
+export const optimizeImage = async (file, maxWidth = 4000, maxHeight = 3000, quality = 0.95) => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -27,6 +27,7 @@ export const optimizeImage = async (file, maxWidth = 1200, maxHeight = 1200, qua
       canvas.height = height;
 
       const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, width, height);
 
@@ -57,7 +58,7 @@ export const optimizeFirebaseUrl = (url) => {
   if (!url) return url;
   try {
     const optimizedUrl = new URL(url);
-    optimizedUrl.searchParams.set('quality', '80');
+    optimizedUrl.searchParams.set('quality', '95');
     optimizedUrl.searchParams.set('format', 'webp');
     optimizedUrl.searchParams.set('cache', 'max-age=31536000');
     return optimizedUrl.toString();
@@ -258,7 +259,7 @@ export const optimizeImageLoading = (imageUrl, options = {}) => {
   const {
     width = 800,
     height = 600,
-    quality = 0.8,
+    quality = 0.95,
     format = 'webp'
   } = options;
 

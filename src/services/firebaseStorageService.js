@@ -20,7 +20,7 @@ const BUCKET_URL = `https://firebasestorage.googleapis.com/v0/b/${BUCKET_NAME}/o
 const uploadCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000;
 
-const compressImage = (file, quality = 0.8, maxWidth = 1920, maxHeight = 1080) => {
+const compressImage = (file, quality = 0.95, maxWidth = 4000, maxHeight = 3000) => {
   return new Promise((resolve) => {
     if (!file.type.startsWith('image/')) {
       resolve(file);
@@ -33,6 +33,9 @@ const compressImage = (file, quality = 0.8, maxWidth = 1920, maxHeight = 1080) =
 
     img.onload = () => {
       let { width, height } = img;
+      
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       
       if (width > maxWidth || height > maxHeight) {
         const aspectRatio = width / height;
@@ -79,9 +82,9 @@ export const uploadFileToFirebaseStorage = async (file, folder = 'tourismSites/i
 
     const {
       compress = true,
-      quality = 0.8,
-      maxWidth = 1920,
-      maxHeight = 1080,
+      quality = 0.95,
+      maxWidth = 4000,
+      maxHeight = 3000,
       onProgress = null
     } = options;
 
@@ -354,7 +357,6 @@ export const getVideoFromStorage = async (videoPath = 'header_video.mp4') => {
   } catch (error) {
     console.error(`Error loading video from Firebase Storage (${videoPath}):`, error);
     
-    // في حالة فشل التحميل، يمكن إرجاع fallback URL أو null
     if (error.code === 'storage/object-not-found') {
       throw new Error(`الفيديو غير موجود في المسار: ${videoPath}`);
     } else if (error.code === 'storage/unauthorized') {
@@ -380,7 +382,7 @@ export const uploadVideoToStorage = async (videoFile, folder = 'videos', options
 
     const {
       onProgress = null,
-      maxSize = 100 * 1024 * 1024 // 100MB limit for videos
+      maxSize = 100 * 1024 * 1024 
     } = options;
 
     if (videoFile.size > maxSize) {
@@ -455,7 +457,6 @@ export const uploadVideoToStorage = async (videoFile, folder = 'videos', options
   }
 };
 
-// دالة لاختبار وجود الفيديو في Firebase Storage
 export const checkVideoExists = async (videoPath = 'header_video.mp4') => {
   try {
     const videoRef = ref(storage, videoPath);
@@ -483,10 +484,8 @@ export const checkVideoExists = async (videoPath = 'header_video.mp4') => {
   }
 };
 
-// دالة لرفع الفيديو إذا لم يكن موجوداً
 export const ensureVideoExists = async (videoPath = 'header_video.mp4', fallbackUrl = null) => {
   try {
-    // التحقق من وجود الفيديو
     const checkResult = await checkVideoExists(videoPath);
     
     if (checkResult.exists) {
@@ -494,7 +493,6 @@ export const ensureVideoExists = async (videoPath = 'header_video.mp4', fallback
       return await getVideoFromStorage(videoPath);
     }
     
-    // إذا لم يكن الفيديو موجوداً وتم توفير fallback URL
     if (fallbackUrl) {
       console.log('Video not found, using fallback URL');
       return {

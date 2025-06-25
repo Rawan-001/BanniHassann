@@ -33,7 +33,7 @@ const fileToBase64 = (file) => {
   });
 };
 
-const compressImage = (file, maxWidth = 1200, quality = 0.8) => {
+const compressImage = (file, maxWidth = 4000, quality = 0.95) => {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -132,8 +132,8 @@ export const saveFileToFirestore = async (file, category, folder) => {
     let thumbnail = null;
     
     if (file.type.startsWith('image/')) {
-      processedFile = await compressImage(file);
-      const thumbnailBlob = await compressImage(file, 300, 0.6);
+      processedFile = await compressImage(file, 4000, 0.95);
+      const thumbnailBlob = await compressImage(file, 800, 0.95);
       thumbnail = await fileToBase64(thumbnailBlob);
     }
     
@@ -671,9 +671,10 @@ const processImages = (data, allMediaImages = []) => {
     });
   }
   
-  if (processedImages.length === 0 && allMediaImages.length > 0) {
-    processedImages = allMediaImages.slice(0, 3);
-  }
+  // إزالة هذا السطر الذي يضيف صور افتراضية عندما لا توجد صور للموقع
+  // if (processedImages.length === 0 && allMediaImages.length > 0) {
+  //   processedImages = allMediaImages.slice(0, 3);
+  // }
   
   return processedImages;
 };
