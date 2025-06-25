@@ -1,0 +1,126 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isActive == true;
+    }
+
+    function isValidImage() {
+      return request.resource.data.type.matches('image/.*');
+    }
+
+    function isValidVideo() {
+      return request.resource.data.type.matches('video/.*');
+    }
+
+    function isValidCoordinates() {
+      return request.resource.data.coordinates.lat is number &&
+        request.resource.data.coordinates.lat >= -90 &&
+        request.resource.data.coordinates.lat <= 90 &&
+        request.resource.data.coordinates.lon is number &&
+        request.resource.data.coordinates.lon >= -180 &&
+        request.resource.data.coordinates.lon <= 180;
+    }
+
+    function isValidRating() {
+      return request.resource.data.rating is number &&
+        request.resource.data.rating >= 0 &&
+        request.resource.data.rating <= 5;
+    }
+
+    function isValidCategory() {
+      return request.resource.data.category in ['cafes', 'dams', 'parks', 'housing', 'viewpoints', 'farms'];
+    }
+
+    function isValidString(field) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() > 0;
+    }
+
+    function isValidTimestamp(field) {
+      return request.resource.data[field] is timestamp;
+    }
+
+    function isOptionalString(field) {
+      return !(field in request.resource.data) || 
+        (request.resource.data[field] is string);
+    }
+
+    function isOptionalCoordinates() {
+      return !('coordinates' in request.resource.data) || 
+        (request.resource.data.coordinates.lat is number &&
+         request.resource.data.coordinates.lat >= -90 &&
+         request.resource.data.coordinates.lat <= 90 &&
+         request.resource.data.coordinates.lon is number &&
+         request.resource.data.coordinates.lon >= -180 &&
+         request.resource.data.coordinates.lon <= 180);
+    }
+
+    function isOptionalRating() {
+      return !('rating' in request.resource.data) || 
+        (request.resource.data.rating is number &&
+         request.resource.data.rating >= 0 &&
+         request.resource.data.rating <= 5);
+    }
+
+    function isOptionalCategory() {
+      return !('category' in request.resource.data) || 
+        (request.resource.data.category in ['cafes', 'dams', 'parks', 'housing', 'viewpoints', 'farms']);
+    }
+
+    match /tourismSites/{siteId} {
+      allow read: if true;
+
+      allow create: if isAdmin() &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() > 0;
+
+      allow update: if isAdmin() &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() > 0;
+
+      allow delete: if isAdmin();
+    }
+
+    match /mediaFiles/{fileId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /admins/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /systemAdmins/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /adminInvitations/{invitationId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /analytics/{document} {
+      allow read: if isAdmin();
+      allow write: if isAuthenticated();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+} 

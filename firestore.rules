@@ -1,0 +1,75 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isActive == true;
+    }
+
+    function isValidString(field) {
+      return request.resource.data[field] == null ||
+        (request.resource.data[field] is string);
+    }
+
+    function hasRequiredFields() {
+      return request.resource.data.title is string &&
+        request.resource.data.title.size() > 0 &&
+        request.resource.data.googleMapsUrl is string &&
+        request.resource.data.googleMapsUrl.size() > 0;
+    }
+
+    match /tourismSites/{siteId} {
+      allow read: if true;
+
+      allow create: if isAdmin() &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() > 0;
+
+      allow update: if isAdmin() &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() > 0;
+
+      allow delete: if isAdmin();
+    }
+
+    match /mediaFiles/{fileId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /admins/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /systemAdmins/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /adminInvitations/{invitationId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /analytics/{document} {
+      allow read: if isAdmin();
+      allow write: if isAuthenticated();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+} 
