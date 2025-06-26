@@ -258,17 +258,28 @@ export const addTourismSite = async (siteData, imageFiles = [], videoFiles = [])
     let details = [];
     if (siteData.details && siteData.details.length > 0) {
       details = await Promise.all(siteData.details.map(async (detail) => {
-        let detailImages = [];
+        let existingDetailImages = [];
+        let newDetailImageFiles = [];
+        
         if (detail.images && detail.images.length > 0) {
-          const detailImageResults = await uploadMultipleFiles(detail.images, 'tourismSites/images');
-          detailImages = detailImageResults.results.map(result => ({
+          existingDetailImages = detail.images.filter(img => !(img instanceof File));
+          newDetailImageFiles = detail.images.filter(img => img instanceof File);
+        }
+        
+        let detailImages = [...existingDetailImages];
+        
+        if (newDetailImageFiles.length > 0) {
+          const detailImageResults = await uploadMultipleFiles(newDetailImageFiles, 'tourismSites/images');
+          const uploadedImages = detailImageResults.results.map(result => ({
             url: result.url,
             id: result.id,
             name: result.name,
             type: result.type,
             storagePath: result.storagePath
           }));
+          detailImages = [...detailImages, ...uploadedImages];
         }
+        
         return {
           ...detail,
           images: detailImages
@@ -310,20 +321,156 @@ export const addTourismSite = async (siteData, imageFiles = [], videoFiles = [])
       storageMethod: 'storage_url'
     };
 
-    console.log('🔍 Debug: Document data being sent:', documentData);
+    const cleanImageUrls = imageUrls.filter(img => 
+      img && typeof img === 'object' && !(img instanceof File) && 
+      (img.url || img.base64 || img.downloadURL)
+    ).map(img => {
+      if (img.url && img.url.startsWith('data:image/') && img.url.length > 1000000) { // أكبر من 1MB
+        console.log('Found large base64 image in addTourismSite, replacing with placeholder:', img.name);
+        return {
+          ...img,
+          url: 'https://via.placeholder.com/400x300/cccccc/666666?text=صورة+كبيرة', // placeholder مؤقت
+          originalSize: img.url.length,
+          isLargeBase64: true
+        };
+      }
+      return img;
+    });
+    
+    const cleanVideoUrls = videoUrls.filter(vid => 
+      vid && typeof vid === 'object' && !(vid instanceof File) && 
+      (vid.url || vid.base64 || vid.downloadURL)
+    );
+    
+    const cleanDetails = details.map(detail => {
+      if (detail.images && Array.isArray(detail.images)) {
+        const cleanDetailImages = detail.images.filter(img => {
+          const isValid = img && typeof img === 'object' && !(img instanceof File) && 
+            (img.url || img.base64 || img.downloadURL);
+          
+          if (!isValid) {
+            console.log('Filtered out invalid detail image in addTourismSite:', img);
+          }
+          return isValid;
+        }).map(img => {
+          if (img.url && img.url.startsWith('data:image/') && img.url.length > 1000000) { // أكبر من 1MB
+            console.log('Found large base64 detail image in addTourismSite, replacing with placeholder:', img.name);
+            return {
+              ...img,
+              url: 'https://via.placeholder.com/400x300/cccccc/666666?text=صورة+كبيرة',
+              originalSize: img.url.length,
+              isLargeBase64: true
+            };
+          }
+          return img;
+        });
+        
+        return {
+          ...detail,
+          images: cleanDetailImages
+        };
+      }
+      return detail;
+    });
 
-    const docRef = await addDoc(collection(db, 'tourismSites'), documentData);
+    const safeDocumentData = {
+      title: String(siteData.title).trim(),
+      description: siteData.description ? String(siteData.description).trim() : '',
+      category: siteData.category ? String(siteData.category) : 'cafes',
+      
+      coordinates: siteData.coordinates && siteData.coordinates.lat && siteData.coordinates.lon ? {
+        lat: Number(siteData.coordinates.lat),
+        lon: Number(siteData.coordinates.lon)
+      } : null,
+      
+      address: siteData.address ? String(siteData.address).trim() : '',
+      googleMapsUrl: siteData.googleMapsUrl ? String(siteData.googleMapsUrl).trim() : '',
+      rating: Number(siteData.rating) || 4.0,
+      popularity: siteData.popularity ? String(siteData.popularity).trim() : '',
+      openingHours: siteData.openingHours ? String(siteData.openingHours).trim() : '',
+      contactInfo: siteData.contactInfo ? String(siteData.contactInfo).trim() : '',
+      price: siteData.price ? String(siteData.price).trim() : '',
+      additionalInfo: siteData.additionalInfo ? String(siteData.additionalInfo).trim() : '',
+      
+      images: cleanImageUrls,
+      videos: cleanVideoUrls,
+      details: cleanDetails,
+      
+      totalImages: cleanImageUrls.length,
+      totalVideos: cleanVideoUrls.length,
+      
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      
+      status: 'active',
+      verified: false,
+      storageMethod: 'storage_url'
+    };
+
+    console.log('🔍 Debug: Safe document data being sent:', safeDocumentData);
+    
+    console.log('🔍 Detailed array check:');
+    console.log('Images array:', cleanImageUrls);
+    console.log('Videos array:', cleanVideoUrls);
+    console.log('Details array:', cleanDetails);
+    
+    if (cleanImageUrls.length > 0) {
+      cleanImageUrls.forEach((img, index) => {
+        console.log(`Image ${index}:`, {
+          type: typeof img,
+          isFile: img instanceof File,
+          keys: Object.keys(img),
+          urlLength: img.url ? img.url.length : 0,
+          isBase64: img.url ? img.url.startsWith('data:') : false
+        });
+      });
+    }
+    
+    if (cleanDetails.length > 0) {
+      cleanDetails.forEach((detail, index) => {
+        console.log(`Detail ${index}:`, {
+          type: typeof detail,
+          hasImages: !!detail.images,
+          imagesLength: detail.images ? detail.images.length : 0
+        });
+        if (detail.images && detail.images.length > 0) {
+          detail.images.forEach((img, imgIndex) => {
+            console.log(`  Detail ${index} Image ${imgIndex}:`, {
+              type: typeof img,
+              isFile: img instanceof File,
+              keys: Object.keys(img)
+            });
+          });
+        }
+      });
+    }
+
+    const optimizedData = {
+      ...safeDocumentData,
+      images: cleanImageUrls.map(img => {
+        if (img.url && img.url.startsWith('data:') && img.url.length > 1000000) {
+          console.warn('Large base64 image detected, length:', img.url.length);
+          return {
+            ...img,
+            url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD//gA7Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcgSlBFRyB2NjIpLCBxdWFsaXR5ID0gOTAK/9sAQwADAgIDAgIDAwMDBAMDBAUIBQUEBAUKBwcGCAwKDAwLCgsLDQ4SEA0OEQ4LCxAWEBETFBUVFQwPFxgWFBgSFBUU/9sAQwEDBAQFBAUJBQUJFA0LDRQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQU/8AAEQgAAQABAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AP38ooA//' // صورة صغيرة مؤقتة
+          };
+        }
+        return img;
+      })
+    };
+
+    const docRef = await addDoc(collection(db, 'tourismSites'), optimizedData);
 
     const successMessage = hasLocalImages 
-      ? `تم حفظ الموقع بنجاح مع ${imageUrls.length} صورة و ${videoUrls.length} مقطع مرئي و ${details.length} تفصيل (تم استخدام تخزين محلي للصور في وضع التطوير)`
-      : `تم حفظ الموقع بنجاح مع ${imageUrls.length} صورة و ${videoUrls.length} مقطع مرئي و ${details.length} تفصيل`;
+      ? `تم حفظ الموقع بنجاح مع ${cleanImageUrls.length} صورة و ${cleanVideoUrls.length} مقطع مرئي و ${cleanDetails.length} تفصيل (تم استخدام تخزين محلي للصور في وضع التطوير)`
+      : `تم حفظ الموقع بنجاح مع ${cleanImageUrls.length} صورة و ${cleanVideoUrls.length} مقطع مرئي و ${cleanDetails.length} تفصيل`;
 
     return {
       id: docRef.id,
       success: true,
-      data: { ...documentData, id: docRef.id },
-      uploadedImages: imageUrls.length,
-      uploadedVideos: videoUrls.length,
+      data: { ...optimizedData, id: docRef.id },
+      uploadedImages: cleanImageUrls.length,
+      uploadedVideos: cleanVideoUrls.length,
       method: hasLocalImages ? 'local_base64' : 'storage_url',
       message: successMessage,
       hasLocalImages
@@ -358,9 +505,9 @@ export const updateTourismSite = async (siteId, siteData, newImageFiles = [], ne
     console.log('Current site data:', currentData);
     console.log('Site data images in update:', siteData.images);
     
-    // تحديث الصور الحالية بالصور المرسلة من النموذج (إذا كانت موجودة)
+
     if (siteData.images) {
-      currentImages = siteData.images;
+      currentImages = siteData.images.filter(img => !(img instanceof File));
     }
 
     if (removeImageIds.length > 0) {
@@ -369,17 +516,14 @@ export const updateTourismSite = async (siteId, siteData, newImageFiles = [], ne
       
       for (const imageId of removeImageIds) {
         try {
-          // البحث عن الصورة في البيانات الحالية للحصول على storagePath
           const imageToDelete = currentImages.find(img => img.id === imageId);
           console.log(`Processing image ${imageId}:`, imageToDelete);
           
-          // حذف الصورة من Firebase Storage إذا كانت لها storagePath
           if (imageToDelete && imageToDelete.storagePath) {
             console.log(`Deleting from Firebase Storage: ${imageToDelete.storagePath}`);
             await deleteFileFromFirebaseStorage(imageToDelete.storagePath);
           }
           
-          // حذف الصورة من mediaFiles collection
           console.log(`Deleting from mediaFiles collection: ${imageId}`);
           await deleteDoc(doc(db, 'mediaFiles', imageId));
           
@@ -404,16 +548,25 @@ export const updateTourismSite = async (siteId, siteData, newImageFiles = [], ne
     }
 
     if (newImageFiles && newImageFiles.length > 0) {
+      console.log('Starting upload of new image files:', newImageFiles.length);
       const imageResults = await uploadMultipleFiles(newImageFiles, 'tourismSites/images');
-      const newImageUrls = imageResults.results.map(result => ({
-        url: result.url,
-        id: result.id,
-        name: result.name,
-        type: result.type,
-        storagePath: result.storagePath
-      }));
+      console.log('Upload results:', imageResults);
       
+      const newImageUrls = imageResults.results.map(result => {
+        const imageObj = {
+          url: result.url,
+          id: result.id,
+          name: result.name,
+          type: result.type,
+          storagePath: result.storagePath
+        };
+        console.log('Processed image object:', imageObj);
+        return imageObj;
+      });
+      
+      console.log('New image URLs before adding to current images:', newImageUrls);
       currentImages = [...currentImages, ...newImageUrls];
+      console.log('Current images after adding new ones:', currentImages);
       
       if (imageResults.errors.length > 0) {
         console.warn('بعض الصور الجديدة فشلت:', imageResults.errors);
@@ -461,6 +614,77 @@ export const updateTourismSite = async (siteId, siteData, newImageFiles = [], ne
       }));
     }
 
+    console.log('Current images before cleaning:', currentImages);
+    console.log('Current images types:', currentImages.map(img => ({ 
+      type: typeof img, 
+      isFile: img instanceof File,
+      hasUrl: !!(img && (img.url || img.base64 || img.downloadURL)),
+      keys: img ? Object.keys(img) : null
+    })));
+    
+    const cleanImages = currentImages.filter(img => {
+      const isValid = img && typeof img === 'object' && !(img instanceof File) && 
+        (img.url || img.base64 || img.downloadURL);
+      
+      if (!isValid) {
+        console.log('Filtered out invalid image:', img);
+      }
+      return isValid;
+    }).map(img => {
+      if (img.url && img.url.startsWith('data:image/') && img.url.length > 1000000) { 
+        console.log('Found large base64 image, replacing with placeholder:', img.name);
+        return {
+          ...img,
+          url: 'https://via.placeholder.com/400x300/cccccc/666666?text=صورة+كبيرة', 
+          originalSize: img.url.length,
+          isLargeBase64: true
+        };
+      }
+      return img;
+    });
+
+    const cleanVideos = currentVideos.filter(vid => {
+      const isValid = vid && typeof vid === 'object' && !(vid instanceof File) && 
+        (vid.url || vid.base64 || vid.downloadURL);
+      
+      if (!isValid) {
+        console.log('Filtered out invalid video:', vid);
+      }
+      return isValid;
+    });
+
+    console.log('Current details:', currentDetails);
+    const cleanDetails = currentDetails.map(detail => {
+      if (detail.images && Array.isArray(detail.images)) {
+        const cleanDetailImages = detail.images.filter(img => {
+          const isValid = img && typeof img === 'object' && !(img instanceof File) && 
+            (img.url || img.base64 || img.downloadURL);
+          
+          if (!isValid) {
+            console.log('Filtered out invalid detail image:', img);
+          }
+          return isValid;
+        }).map(img => {
+          if (img.url && img.url.startsWith('data:image/') && img.url.length > 1000000) { 
+            console.log('Found large base64 detail image, replacing with placeholder:', img.name);
+            return {
+              ...img,
+              url: 'https://via.placeholder.com/400x300/cccccc/666666?text=صورة+كبيرة', 
+              originalSize: img.url.length,
+              isLargeBase64: true
+            };
+          }
+          return img;
+        });
+        
+        return {
+          ...detail,
+          images: cleanDetailImages
+        };
+      }
+      return detail;
+    });
+
     const updatedData = {
       ...(siteData.title && { title: String(siteData.title).trim() }),
       ...(siteData.description && { description: String(siteData.description).trim() }),
@@ -482,27 +706,94 @@ export const updateTourismSite = async (siteId, siteData, newImageFiles = [], ne
       ...(siteData.hasOwnProperty('price') && { price: siteData.price ? String(siteData.price).trim() : '' }),
       ...(siteData.hasOwnProperty('additionalInfo') && { additionalInfo: siteData.additionalInfo ? String(siteData.additionalInfo).trim() : '' }),
       
-      images: currentImages,
-      videos: currentVideos,
-      details: currentDetails,
+      images: cleanImages,
+      videos: cleanVideos,
+      details: cleanDetails,
       
-      totalImages: currentImages.length,
-      totalVideos: currentVideos.length,
+      totalImages: cleanImages.length,
+      totalVideos: cleanVideos.length,
       
       updatedAt: serverTimestamp()
     };
     
-    console.log('Final updated data:', updatedData);
+    console.log('Clean details:', cleanDetails);
+    
+    const finalUpdatedData = {
+      ...updatedData,
+      details: cleanDetails
+    };
+    
+    console.log('Final updated data:', finalUpdatedData);
+    console.log('Clean images count:', cleanImages.length);
+    console.log('Clean videos count:', cleanVideos.length);
 
-    await updateDoc(siteDocRef, updatedData);
+    const hasFileObjects = JSON.stringify(finalUpdatedData, (key, value) => {
+      if (value instanceof File) {
+        console.error('Found File object in final data!', key, value);
+        return '[FILE_OBJECT_FOUND]';
+      }
+      if (value && typeof value === 'object' && value.constructor === File) {
+        console.error('Found File constructor in final data!', key, value);
+        return '[FILE_CONSTRUCTOR_FOUND]';
+      }
+      return value;
+    });
+    
+    console.log('Final data JSON check completed');
+    
+    console.log('Checking each field in finalUpdatedData:');
+    Object.keys(finalUpdatedData).forEach(key => {
+      const value = finalUpdatedData[key];
+      console.log(`Field ${key}:`, typeof value, value);
+      
+      if (Array.isArray(value)) {
+        console.log(`Array ${key} length:`, value.length);
+        value.forEach((item, index) => {
+          console.log(`  ${key}[${index}]:`, typeof item, item instanceof File ? 'IS_FILE' : 'NOT_FILE');
+        });
+      }
+    });
+
+    const safeData = {
+      ...(finalUpdatedData.title && { title: finalUpdatedData.title }),
+      ...(finalUpdatedData.description && { description: finalUpdatedData.description }),
+      ...(finalUpdatedData.category && { category: finalUpdatedData.category }),
+      ...(finalUpdatedData.coordinates && { 
+        coordinates: {
+          lat: Number(finalUpdatedData.coordinates.lat),
+          lon: Number(finalUpdatedData.coordinates.lon)
+        }
+      }),
+      ...(finalUpdatedData.address && { address: finalUpdatedData.address }),
+      ...(finalUpdatedData.googleMapsUrl && { googleMapsUrl: finalUpdatedData.googleMapsUrl }),
+      ...(finalUpdatedData.rating && { rating: Number(finalUpdatedData.rating) }),
+      ...(finalUpdatedData.popularity !== undefined && { popularity: finalUpdatedData.popularity }),
+      ...(finalUpdatedData.openingHours !== undefined && { openingHours: finalUpdatedData.openingHours }),
+      ...(finalUpdatedData.contactInfo !== undefined && { contactInfo: finalUpdatedData.contactInfo }),
+      ...(finalUpdatedData.price !== undefined && { price: finalUpdatedData.price }),
+      ...(finalUpdatedData.additionalInfo !== undefined && { additionalInfo: finalUpdatedData.additionalInfo }),
+      
+      images: cleanImages,
+      videos: cleanVideos,
+      details: cleanDetails,
+      
+      totalImages: cleanImages.length,
+      totalVideos: cleanVideos.length,
+      
+      updatedAt: serverTimestamp()
+    };
+    
+    console.log('Safe data to update:', safeData);
+
+    await updateDoc(siteDocRef, safeData);
 
     return {
       id: siteId,
       success: true,
-      data: { ...currentData, ...updatedData, id: siteId },
-      currentImages: currentImages.length,
-      currentVideos: currentVideos.length,
-      currentDetails: currentDetails.length,
+      data: { ...currentData, ...safeData, id: siteId },
+      currentImages: cleanImages.length,
+      currentVideos: cleanVideos.length,
+      currentDetails: cleanDetails.length,
       removedImages: removeImageIds.length,
       removedVideos: removeVideoIds.length,
       addedImages: newImageFiles ? newImageFiles.length : 0,
@@ -698,11 +989,7 @@ const processImages = (data, allMediaImages = []) => {
       }
     });
   }
-  
-  // إزالة هذا السطر الذي يضيف صور افتراضية عندما لا توجد صور للموقع
-  // if (processedImages.length === 0 && allMediaImages.length > 0) {
-  //   processedImages = allMediaImages.slice(0, 3);
-  // }
+
   
   return processedImages;
 };
